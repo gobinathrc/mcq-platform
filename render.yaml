@@ -1,9 +1,9 @@
 services:
-  # Web Service running Node.js + Express backend (which also serves Vite production client)
+  # Web Service running Node.js + Express backend (serves API + React frontend)
   - type: web
     name: mcq-assessment-platform
     env: node
-    plan: starter
+    plan: free
     buildCommand: npm install && npm run build
     startCommand: npm start
     envVars:
@@ -14,15 +14,6 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: DATABASE_URL
-        fromDatabase:
-          name: mcq-postgres
-          property: connectionString
+        sync: false # Paste your Supabase URI here
       - key: DB_POOL_MAX
         value: 50
-
-databases:
-  # Managed PostgreSQL instance on Render
-  - name: mcq-postgres
-    plan: free
-    databaseName: mcq_exam_db
-    user: mcq_admin

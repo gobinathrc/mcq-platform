@@ -14,12 +14,12 @@ export const getDbConfig = (): PoolConfig => {
   if (connectionString) {
     return {
       connectionString,
-      ssl: process.env.NODE_ENV === 'production' || connectionString.includes('render.com') || connectionString.includes('neon.tech') 
+      ssl: process.env.NODE_ENV === 'production' || connectionString.includes('render.com') || connectionString.includes('neon.tech') || connectionString.includes('supabase.co')
         ? { rejectUnauthorized: false } 
         : undefined,
       max: Number(process.env.DB_POOL_MAX || 50),
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 5000,
+      connectionTimeoutMillis: 10000,
     };
   }
 
