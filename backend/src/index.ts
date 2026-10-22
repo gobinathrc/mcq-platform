@@ -10,15 +10,15 @@ dotenv.config();
 const PORT = process.env.PORT || 5000;
 const app = createApp();
 
-// In production, serve client build if available
-const clientDistPath = path.resolve(__dirname, '../../client/dist');
-app.use(express.static(clientDistPath));
+// In production, serve frontend build if available
+const frontendDistPath = path.resolve(__dirname, '../../frontend/dist');
+app.use(express.static(frontendDistPath));
 
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) {
     return next();
   }
-  res.sendFile(path.join(clientDistPath, 'index.html'), (err) => {
+  res.sendFile(path.join(frontendDistPath, 'index.html'), (err) => {
     if (err) {
       next();
     }
