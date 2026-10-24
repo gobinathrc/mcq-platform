@@ -9,24 +9,28 @@
     -ms-user-select: none !important;
     user-select: none !important;
     -webkit-user-drag: none !important;
+    -webkit-touch-callout: none !important; /* Disables long-press callout/magnifier on iOS/Safari and Android */
+    touch-action: manipulation; /* Prevents double-tap zoom delay on mobile devices */
   }
 }
 
-/* Strictly disable text selection, highlighting, clicking & dragging */
+/* Strictly disable text selection, highlighting, clicking & dragging across desktop and mobile */
 * {
   -webkit-user-select: none !important;
   -moz-user-select: none !important;
   -ms-user-select: none !important;
   user-select: none !important;
   -webkit-user-drag: none !important;
+  -webkit-touch-callout: none !important;
 }
 
-/* Keep form inputs selectable during auth */
+/* Keep form inputs selectable and typeable during registration / sign in */
 input, textarea {
   -webkit-user-select: text !important;
   -moz-user-select: text !important;
   -ms-user-select: text !important;
   user-select: text !important;
+  -webkit-touch-callout: default !important;
 }
 
 /* Glassmorphism custom utilities */
