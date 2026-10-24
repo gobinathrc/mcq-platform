@@ -71,6 +71,7 @@ export function App() {
   
   // 45 seconds countdown timer per question
   const [secondsRemaining, setSecondsRemaining] = useState(QUESTION_TIME_SECONDS);
+  const [extraTimeUsed, setExtraTimeUsed] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
 
   // Result state (clean final score only, no answer leak)
@@ -247,6 +248,7 @@ export function App() {
       setSessionId(data.sessionId);
       setQuestions(data.questions);
       setSelectedAnswers({});
+      setExtraTimeUsed({});
       setCurrentIdx(0);
       setSecondsRemaining(QUESTION_TIME_SECONDS);
       setExamStarted(true);
@@ -263,6 +265,18 @@ export function App() {
     setSelectedAnswers((prev) => ({
       ...prev,
       [q.id]: key,
+    }));
+  };
+
+  // Allow candidate to add +15 seconds once per question when time is below 15s
+  const handleAddExtraTime = () => {
+    const currentQ = questions[currentIdx];
+    if (!currentQ || extraTimeUsed[currentQ.id]) return;
+
+    setSecondsRemaining((prev) => prev + 15);
+    setExtraTimeUsed((prev) => ({
+      ...prev,
+      [currentQ.id]: true
     }));
   };
 
@@ -447,7 +461,17 @@ export function App() {
             </span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {/* +15s Extra Time Button (Visible when seconds <= 15 and not yet used for this question) */}
+            {secondsRemaining <= 15 && !extraTimeUsed[currentQ.id] && (
+              <button
+                onClick={handleAddExtraTime}
+                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/25 transition animate-bounce"
+              >
+                +15s Extra
+              </button>
+            )}
+
             {/* 45 Seconds Countdown Display */}
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-mono text-sm font-semibold border ${
               secondsRemaining <= 10 
