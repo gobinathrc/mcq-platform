@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'antigravity-secure-mcq-jwt-secret-2026';
+import { getJwtSecret } from '../utils/jwt';
 
 export interface AuthenticatedUser {
   userId: string;
@@ -22,10 +21,11 @@ export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction)
 
   const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as AuthenticatedUser;
+    const decoded = jwt.verify(token, getJwtSecret()) as AuthenticatedUser;
     req.user = decoded;
     next();
-  } catch (err) {
+  } catch (err: any) {
+    console.error('requireAuth verification error:', err.message);
     res.status(401).json({ error: 'Invalid or expired authentication token' });
   }
 };

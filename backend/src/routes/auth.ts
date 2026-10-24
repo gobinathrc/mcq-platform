@@ -4,9 +4,9 @@ import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { query } from '../db/pool';
+import { getJwtSecret } from '../utils/jwt';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'antigravity-secure-mcq-jwt-secret-2026';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -48,7 +48,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
       [userId, name.trim(), normalizedEmail, passwordHash]
     );
 
-    const token = jwt.sign({ userId, email: normalizedEmail, name: name.trim() }, JWT_SECRET, {
+    const token = jwt.sign({ userId, email: normalizedEmail, name: name.trim() }, getJwtSecret(), {
       expiresIn: '7d'
     });
 
@@ -93,7 +93,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const token = jwt.sign({ userId: user.id, email: user.email, name: user.name }, JWT_SECRET, {
+    const token = jwt.sign({ userId: user.id, email: user.email, name: user.name }, getJwtSecret(), {
       expiresIn: '7d'
     });
 
