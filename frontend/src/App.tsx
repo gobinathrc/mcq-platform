@@ -1,18 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
-  CheckCircle2, 
-  XCircle, 
-  Clock, 
   Award, 
   BookOpen, 
   ShieldCheck, 
   ChevronRight, 
-  ChevronLeft, 
   RotateCcw, 
   LogOut, 
   Layers, 
-  BarChart3,
-  HelpCircle
+  Clock,
+  XCircle,
+  HelpCircle,
+  CheckCircle2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -36,29 +34,15 @@ interface Question {
   options: QuestionOption[];
 }
 
-interface AnswerBreakdown {
-  questionId: string;
-  questionText: string;
-  selectedOption: 'A' | 'B' | 'C' | 'D' | null;
-  correctOption: 'A' | 'B' | 'C' | 'D';
-  isCorrect: boolean;
-  explanation: string;
-  options: {
-    A: string;
-    B: string;
-    C: string;
-    D: string;
-  };
-}
-
 interface ExamResult {
   sessionId: string;
   score: number;
   totalQuestions: number;
   percentage: number;
   passed: boolean;
-  breakdown: AnswerBreakdown[];
 }
+
+const QUESTION_TIME_SECONDS = 45; // 45 seconds strictly per question
 
 export function App() {
   // Auth state
@@ -84,30 +68,113 @@ export function App() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, 'A' | 'B' | 'C' | 'D'>>({});
-  const [timeLeft, setTimeLeft] = useState(1800); // 30 minutes for 30 questions
+  
+  // 45 seconds countdown timer per question
+  const [secondsRemaining, setSecondsRemaining] = useState(QUESTION_TIME_SECONDS);
   const [submitting, setSubmitting] = useState(false);
 
-  // Result state
+  // Result state (clean final score only, no answer leak)
   const [result, setResult] = useState<ExamResult | null>(null);
-  const [reviewFilter, setReviewFilter] = useState<'all' | 'incorrect' | 'correct'>('all');
 
-  // Timer countdown during exam
+  const selectedAnswersRef = useRef(selectedAnswers);
+  selectedAnswersRef.current = selectedAnswers;
+
+  const questionsRef = useRef(questions);
+  questionsRef.current = questions;
+
+  const currentIdxRef = useRef(currentIdx);
+  currentIdxRef.current = currentIdx;
+
+  const tokenRef = useRef(token);
+  tokenRef.current = token;
+
+  const sessionIdRef = useRef(sessionId);
+  sessionIdRef.current = sessionId;
+
+  // Submit exam and receive final score (no question/answer breakdown returned)
+  const handleSubmitExam = async () => {
+    const activeToken = tokenRef.current;
+    const activeSessionId = sessionIdRef.current;
+    const activeQuestions = questionsRef.current;
+    const activeAnswers = selectedAnswersRef.current;
+
+    if (!activeToken || !activeSessionId) return;
+    setSubmitting(true);
+
+    const answersPayload = activeQuestions.map((q) => ({
+      questionId: q.id,
+      selectedOption: activeAnswers[q.id] || null,
+    }));
+
+    try {
+      const res = await fetch('/api/test/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${activeToken}`,
+        },
+        body: JSON.stringify({
+          sessionId: activeSessionId,
+          answers: answersPayload,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to submit exam');
+      }
+
+      setResult({
+        sessionId: data.sessionId,
+        score: data.score,
+        totalQuestions: data.totalQuestions,
+        percentage: data.percentage,
+        passed: data.passed
+      });
+
+      if (data.percentage >= 60) {
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Move to next question or auto-submit when on last question
+  const handleNextQuestion = () => {
+    if (currentIdxRef.current < questionsRef.current.length - 1) {
+      setCurrentIdx((prev) => prev + 1);
+      setSecondsRemaining(QUESTION_TIME_SECONDS);
+    } else {
+      handleSubmitExam();
+    }
+  };
+
+  // 45s timer for each question
   useEffect(() => {
     if (!examStarted || result) return;
 
+    setSecondsRemaining(QUESTION_TIME_SECONDS);
+
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
+      setSecondsRemaining((prev) => {
         if (prev <= 1) {
-          clearInterval(timer);
-          handleSubmitExam();
-          return 0;
+          // Time expired for this question: advance to next question
+          handleNextQuestion();
+          return QUESTION_TIME_SECONDS;
         }
         return prev - 1;
       });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [examStarted, result, selectedAnswers]);
+  }, [examStarted, currentIdx, result]);
 
   // Auth handler
   const handleAuthSubmit = async (e: React.FormEvent) => {
@@ -170,7 +237,6 @@ export function App() {
       const data = await res.json();
       if (!res.ok) {
         if (res.status === 401) {
-          // Token expired or server restarted with new JWT_SECRET
           handleLogout();
           alert('Your session has expired. Please sign in again.');
           return;
@@ -182,7 +248,7 @@ export function App() {
       setQuestions(data.questions);
       setSelectedAnswers({});
       setCurrentIdx(0);
-      setTimeLeft(30 * 60); // 30 minutes
+      setSecondsRemaining(QUESTION_TIME_SECONDS);
       setExamStarted(true);
       setResult(null);
     } catch (err: any) {
@@ -192,62 +258,12 @@ export function App() {
     }
   };
 
-  // Select option for current question
   const handleSelectOption = (key: 'A' | 'B' | 'C' | 'D') => {
     const q = questions[currentIdx];
     setSelectedAnswers((prev) => ({
       ...prev,
       [q.id]: key,
     }));
-  };
-
-  // Submit exam and receive instant score
-  const handleSubmitExam = async () => {
-    if (!token || !sessionId || submitting) return;
-    setSubmitting(true);
-
-    const answersPayload = questions.map((q) => ({
-      questionId: q.id,
-      selectedOption: selectedAnswers[q.id] || null,
-    }));
-
-    try {
-      const res = await fetch('/api/test/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          sessionId,
-          answers: answersPayload,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to submit exam');
-      }
-
-      setResult(data);
-      if (data.percentage >= 60) {
-        confetti({
-          particleCount: 80,
-          spread: 70,
-          origin: { y: 0.6 }
-        });
-      }
-    } catch (err: any) {
-      alert(err.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const formatTimer = (secs: number) => {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   // 1. Authentication View
@@ -259,8 +275,8 @@ export function App() {
             <div className="inline-flex p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 mb-3 shadow-inner">
               <BookOpen className="w-8 h-8" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-white">Interview Assessment MCQ</h1>
-            <p className="text-slate-400 text-sm mt-1">High-concurrency examination portal for 70+ candidates</p>
+            <h1 className="text-2xl font-bold tracking-tight text-white">Assessment MCQ Arena</h1>
+            <p className="text-slate-400 text-sm mt-1">Cross-platform test portal (Mac, Windows, iOS, Android)</p>
           </div>
 
           <div className="flex bg-slate-900/80 p-1 rounded-xl mb-6 border border-slate-800">
@@ -300,7 +316,7 @@ export function App() {
                   required
                   value={authName}
                   onChange={(e) => setAuthName(e.target.value)}
-                  placeholder="e.g. Alex Johnson (ID 402)"
+                  placeholder="e.g. Candidate Name (ID 101)"
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-white text-sm outline-none transition"
                 />
               </div>
@@ -315,7 +331,7 @@ export function App() {
                 required
                 value={authEmail}
                 onChange={(e) => setAuthEmail(e.target.value)}
-                placeholder="candidate@college.edu"
+                placeholder="candidate@praxistechschool.in"
                 className="w-full px-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-white text-sm outline-none transition"
               />
             </div>
@@ -339,7 +355,7 @@ export function App() {
               disabled={authLoading}
               className="w-full mt-2 py-3 px-4 rounded-xl font-medium bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 transition disabled:opacity-50"
             >
-              {authLoading ? 'Verifying...' : authMode === 'register' ? 'Register & Enter Lobby' : 'Sign In to Exam'}
+              {authLoading ? 'Verifying...' : authMode === 'register' ? 'Register & Enter Exam' : 'Sign In to Exam'}
             </button>
           </form>
         </div>
@@ -347,172 +363,80 @@ export function App() {
     );
   }
 
-  // 2. Instant Results & Scorecard View
+  // 2. Instant Results & Scorecard View (Secure: Shows ONLY final score & percentage, NO answers leaked)
   if (result) {
-    const filteredBreakdown = result.breakdown.filter((item) => {
-      if (reviewFilter === 'correct') return item.isCorrect;
-      if (reviewFilter === 'incorrect') return !item.isCorrect;
-      return true;
-    });
-
     return (
-      <div className="min-h-screen p-4 sm:p-8 bg-slate-950 max-w-4xl mx-auto">
+      <div className="min-h-screen p-4 sm:p-8 bg-slate-950 max-w-3xl mx-auto flex flex-col justify-center">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-800">
-          <div>
-            <span className="text-xs uppercase tracking-widest text-indigo-400 font-bold">Interview Assessment Report</span>
-            <h1 className="text-2xl font-bold text-white mt-1">Assessment Complete</h1>
-          </div>
-          <button
-            onClick={() => { setResult(null); setExamStarted(false); }}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm transition"
-          >
-            <RotateCcw className="w-4 h-4" /> Take Another Test
-          </button>
+        <div className="text-center mb-8">
+          <span className="text-xs uppercase tracking-widest text-indigo-400 font-bold">Assessment Completed</span>
+          <h1 className="text-3xl font-extrabold text-white mt-1">Test Submitted Successfully</h1>
+          <p className="text-slate-400 text-sm mt-1">Your responses have been securely logged in the assessment database.</p>
         </div>
 
         {/* Scorecard Hero */}
-        <div className="glass-panel p-6 sm:p-8 rounded-2xl mb-8 relative overflow-hidden border border-indigo-500/20">
+        <div className="glass-panel p-8 sm:p-10 rounded-3xl mb-8 relative overflow-hidden border border-indigo-500/20 shadow-2xl">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-            <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Total Score</span>
+            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Your Final Score</span>
               <div className="text-4xl font-extrabold text-white mt-2">
                 {result.score} <span className="text-slate-500 text-xl font-normal">/ {result.totalQuestions}</span>
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Accuracy</span>
+            <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col justify-center">
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Percentage</span>
               <div className="text-4xl font-extrabold text-indigo-400 mt-2">
                 {result.percentage}%
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Status</span>
-              <div className={`text-2xl font-extrabold mt-3 flex items-center justify-center gap-1.5 ${
+            <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col justify-center">
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Result Status</span>
+              <div className={`text-2xl font-extrabold mt-2 flex items-center justify-center gap-1.5 ${
                 result.passed ? 'text-emerald-400' : 'text-amber-400'
               }`}>
                 {result.passed ? (
                   <>
-                    <Award className="w-6 h-6 shrink-0" /> PASS
+                    <Award className="w-6 h-6 shrink-0" /> PASSED
                   </>
                 ) : (
                   <>
-                    <HelpCircle className="w-6 h-6 shrink-0" /> REVIEW REQUIRED
+                    <HelpCircle className="w-6 h-6 shrink-0" /> COMPLETED
                   </>
                 )}
               </div>
             </div>
           </div>
+
+          <div className="mt-8 p-4 rounded-2xl bg-slate-900/40 border border-slate-800 text-center text-xs text-slate-400">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 inline mr-1" />
+            Evaluation finalized immediately. To maintain assessment confidentiality, correct and incorrect individual choices are not revealed.
+          </div>
         </div>
 
-        {/* Question Review Section */}
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-indigo-400" /> Detailed Question Analysis ({result.breakdown.length} Questions)
-            </h2>
-
-            <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
-              <button
-                onClick={() => setReviewFilter('all')}
-                className={`px-3 py-1.5 rounded-lg ${reviewFilter === 'all' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}
-              >
-                All ({result.breakdown.length})
-              </button>
-              <button
-                onClick={() => setReviewFilter('incorrect')}
-                className={`px-3 py-1.5 rounded-lg ${reviewFilter === 'incorrect' ? 'bg-rose-600 text-white' : 'text-slate-400'}`}
-              >
-                Mistakes ({result.breakdown.filter(b => !b.isCorrect).length})
-              </button>
-              <button
-                onClick={() => setReviewFilter('correct')}
-                className={`px-3 py-1.5 rounded-lg ${reviewFilter === 'correct' ? 'bg-emerald-600 text-white' : 'text-slate-400'}`}
-              >
-                Correct ({result.breakdown.filter(b => b.isCorrect).length})
-              </button>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {filteredBreakdown.map((item, idx) => (
-              <div
-                key={item.questionId}
-                className={`p-5 rounded-2xl border transition-all ${
-                  item.isCorrect 
-                    ? 'bg-slate-900/50 border-emerald-500/20' 
-                    : 'bg-slate-900/70 border-rose-500/30'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-4 mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 font-mono">
-                      Q{idx + 1}
-                    </span>
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg flex items-center gap-1 ${
-                      item.isCorrect ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
-                    }`}>
-                      {item.isCorrect ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                      {item.isCorrect ? 'Correct (+1)' : 'Incorrect'}
-                    </span>
-                  </div>
-                </div>
-
-                <p className="text-base font-medium text-slate-100 mb-4">{item.questionText}</p>
-
-                {/* 4 Options Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 text-sm">
-                  {(['A', 'B', 'C', 'D'] as const).map((optKey) => {
-                    const isCandidateChoice = item.selectedOption === optKey;
-                    const isCorrectChoice = item.correctOption === optKey;
-
-                    let badgeStyle = 'bg-slate-800/60 border-slate-700/60 text-slate-300';
-                    if (isCorrectChoice) {
-                      badgeStyle = 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300 font-semibold';
-                    } else if (isCandidateChoice && !item.isCorrect) {
-                      badgeStyle = 'bg-rose-950/60 border-rose-500/50 text-rose-300 line-through';
-                    }
-
-                    return (
-                      <div
-                        key={optKey}
-                        className={`p-3 rounded-xl border flex items-center gap-2.5 ${badgeStyle}`}
-                      >
-                        <span className="w-6 h-6 rounded-lg bg-slate-900 flex items-center justify-center font-bold text-xs">
-                          {optKey}
-                        </span>
-                        <span>{item.options[optKey]}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Explanation */}
-                {item.explanation && (
-                  <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 leading-relaxed">
-                    <span className="font-semibold text-indigo-400 block mb-1">Explanation:</span>
-                    {item.explanation}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+        <div className="text-center">
+          <button
+            onClick={() => { setResult(null); setExamStarted(false); }}
+            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/25 transition"
+          >
+            <RotateCcw className="w-4 h-4" /> Return to Lobby
+          </button>
         </div>
       </div>
     );
   }
 
-  // 3. Active Test Taking Interface
+  // 3. Active Test Taking Interface (45 Seconds STRICT per question)
   if (examStarted && questions.length > 0) {
     const currentQ = questions[currentIdx];
     const selected = selectedAnswers[currentQ.id];
     const answeredCount = Object.keys(selectedAnswers).length;
+    const isLastQuestion = currentIdx === questions.length - 1;
 
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col">
-        {/* Top Header bar with Timer & Live Status */}
+        {/* Top Header bar with Per-Question 45s Timer */}
         <header className="glass-panel sticky top-0 z-30 px-6 py-4 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-3">
             <span className="px-3 py-1 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-bold tracking-wider">
@@ -524,13 +448,14 @@ export function App() {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* 45 Seconds Countdown Display */}
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-mono text-sm font-semibold border ${
-              timeLeft < 300 
-                ? 'bg-rose-500/10 text-rose-400 border-rose-500/30 animate-pulse' 
+              secondsRemaining <= 10 
+                ? 'bg-rose-500/15 text-rose-400 border-rose-500/40 animate-pulse' 
                 : 'bg-slate-900 text-slate-200 border-slate-700'
             }`}>
               <Clock className="w-4 h-4" />
-              <span>{formatTimer(timeLeft)}</span>
+              <span>{secondsRemaining}s left</span>
             </div>
 
             <button
@@ -538,10 +463,20 @@ export function App() {
               disabled={submitting}
               className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-emerald-600/20 transition"
             >
-              {submitting ? 'Evaluating...' : 'Finish & Submit'}
+              {submitting ? 'Submitting...' : 'Finish Exam'}
             </button>
           </div>
         </header>
+
+        {/* Question Progress Bar (45s visual decrease) */}
+        <div className="w-full bg-slate-900 h-1.5 overflow-hidden">
+          <div 
+            className={`h-full transition-all duration-1000 ${
+              secondsRemaining <= 10 ? 'bg-rose-500' : 'bg-indigo-500'
+            }`}
+            style={{ width: `${(secondsRemaining / QUESTION_TIME_SECONDS) * 100}%` }}
+          />
+        </div>
 
         {/* Main Content Area */}
         <div className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-8 flex flex-col lg:flex-row gap-6">
@@ -589,22 +524,13 @@ export function App() {
               </div>
             </div>
 
-            {/* Navigation buttons */}
-            <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-800">
+            {/* Advance Button (Explicit Next or auto after 45s) */}
+            <div className="flex items-center justify-end mt-8 pt-6 border-t border-slate-800">
               <button
-                onClick={() => setCurrentIdx((prev) => Math.max(0, prev - 1))}
-                disabled={currentIdx === 0}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 disabled:opacity-40 text-sm font-medium transition"
+                onClick={handleNextQuestion}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition"
               >
-                <ChevronLeft className="w-4 h-4" /> Previous
-              </button>
-
-              <button
-                onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
-                disabled={currentIdx === questions.length - 1}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-40 text-sm font-medium transition"
-              >
-                Next <ChevronRight className="w-4 h-4" />
+                {isLastQuestion ? 'Submit Exam' : 'Next Question'} <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -612,7 +538,7 @@ export function App() {
           {/* Question Grid Navigator on the Side */}
           <div className="w-full lg:w-72 glass-panel p-5 rounded-2xl border border-slate-800 h-fit">
             <h3 className="text-xs uppercase tracking-wider font-bold text-slate-400 mb-4 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-indigo-400" /> Question Palette
+              <Layers className="w-4 h-4 text-indigo-400" /> Exam Progress
             </h3>
 
             <div className="grid grid-cols-6 lg:grid-cols-5 gap-2">
@@ -621,19 +547,18 @@ export function App() {
                 const isAnswered = selectedAnswers[q.id] !== undefined;
 
                 return (
-                  <button
+                  <div
                     key={q.id}
-                    onClick={() => setCurrentIdx(idx)}
-                    className={`h-9 rounded-xl text-xs font-bold transition-all ${
+                    className={`h-9 rounded-xl text-xs font-bold flex items-center justify-center transition-all ${
                       isCurrent
                         ? 'ring-2 ring-indigo-400 bg-indigo-600 text-white'
                         : isAnswered
                         ? 'bg-emerald-600/30 border border-emerald-500/40 text-emerald-300'
-                        : 'bg-slate-900 text-slate-400 border border-slate-800 hover:border-slate-700'
+                        : 'bg-slate-900 text-slate-400 border border-slate-800'
                     }`}
                   >
                     {idx + 1}
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -645,7 +570,7 @@ export function App() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded bg-slate-900 border border-slate-800 inline-block" />
-                <span>Unattempted</span>
+                <span>Upcoming</span>
               </div>
             </div>
           </div>
@@ -661,7 +586,7 @@ export function App() {
       <header className="glass-panel px-6 py-4 flex items-center justify-between border-b border-slate-800">
         <div className="flex items-center gap-2">
           <BookOpen className="w-6 h-6 text-indigo-400" />
-          <span className="font-bold text-lg text-white">Interview Assessment Arena</span>
+          <span className="font-bold text-lg text-white">Assessment Arena</span>
         </div>
 
         <div className="flex items-center gap-4">
@@ -683,13 +608,13 @@ export function App() {
       <main className="max-w-4xl mx-auto px-4 py-12 w-full">
         <div className="text-center mb-10">
           <span className="px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
-            Ready for 70+ Concurrent Examinees
+            45 Seconds Per Question • Instant Final Score
           </span>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-white mt-3 tracking-tight">
             Select Assessment Difficulty
           </h1>
           <p className="text-slate-400 max-w-lg mx-auto text-sm sm:text-base mt-2">
-            Each exam will present <strong>30 questions</strong> with 4 options each, randomized and shuffled specifically for your session. Immediate scoring will be rendered upon completion.
+            Each question gives you strictly <strong>45 seconds</strong>. Once completed, your final score is calculated and securely stored in PostgreSQL without revealing answer keys.
           </p>
         </div>
 
@@ -709,10 +634,10 @@ export function App() {
             </div>
             <h3 className="text-xl font-bold text-white mb-1">Easy Level</h3>
             <p className="text-xs text-slate-400 leading-relaxed mb-4">
-              Core fundamentals: Data structures basics, standard JS syntax, basic SQL queries, and Git commands.
+              SQL filtering (WHERE vs HAVING), DISTINCT queries, basic JOINS, pattern wildcards, and COUNT aggregations.
             </p>
             <div className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
-              <ShieldCheck className="w-4 h-4" /> Recommended for junior candidates
+              <ShieldCheck className="w-4 h-4" /> 45s per question
             </div>
           </div>
 
@@ -730,10 +655,10 @@ export function App() {
             </div>
             <h3 className="text-xl font-bold text-white mb-1">Medium Level</h3>
             <p className="text-xs text-slate-400 leading-relaxed mb-4">
-              Full-stack concepts: Event Loop microtasks, ACID transactions, React reconciliation diffing, and B-Tree indexes.
+              Window functions (DENSE_RANK, LAG, LEAD), correlated subqueries, 3VL NULL logic, and CTEs.
             </p>
             <div className="text-xs text-indigo-400 font-semibold flex items-center gap-1">
-              <ShieldCheck className="w-4 h-4" /> Standard technical interview
+              <ShieldCheck className="w-4 h-4" /> 45s per question
             </div>
           </div>
 
@@ -751,10 +676,10 @@ export function App() {
             </div>
             <h3 className="text-xl font-bold text-white mb-1">Hard Level</h3>
             <p className="text-xs text-slate-400 leading-relaxed mb-4">
-              Senior & Architecture: CAP theorem, MVCC serializable isolation, distributed rate-limiting, and WAL recovery.
+              Serializable Snapshot Isolation (SSI), covering indexes, MVCC VACUUM dead tuples, and WAL.
             </p>
             <div className="text-xs text-rose-400 font-semibold flex items-center gap-1">
-              <ShieldCheck className="w-4 h-4" /> Rigorous senior assessment
+              <ShieldCheck className="w-4 h-4" /> 45s per question
             </div>
           </div>
         </div>
@@ -766,13 +691,13 @@ export function App() {
             disabled={loadingQuestions}
             className="px-8 py-4 rounded-xl font-bold text-white text-base bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-xl shadow-indigo-500/25 transition disabled:opacity-50"
           >
-            {loadingQuestions ? 'Preparing Test Environment...' : `Start ${difficulty} Assessment (30 Questions)`}
+            {loadingQuestions ? 'Preparing Environment...' : `Start ${difficulty} Assessment (45s Per Question)`}
           </button>
         </div>
       </main>
 
       <footer className="text-center py-6 text-xs text-slate-500 border-t border-slate-800">
-        PostgreSQL-backed High Concurrency MCQ Engine • Built with Google Antigravity Architecture
+        Assessment Engine • Cross-Platform Universal Web Client
       </footer>
     </div>
   );
