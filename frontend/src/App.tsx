@@ -42,7 +42,15 @@ interface ExamResult {
   passed: boolean;
 }
 
-const QUESTION_TIME_SECONDS = 45; // 45 seconds strictly per question
+// Difficulty-based time per question:
+// Easy: 45 seconds
+// Medium: 60 seconds (1 minute)
+// Hard: 75 seconds (1 minute 15 seconds)
+const getTimeForQuestion = (diff?: 'EASY' | 'MEDIUM' | 'HARD'): number => {
+  if (diff === 'HARD') return 75;
+  if (diff === 'MEDIUM') return 60;
+  return 45; // EASY default
+};
 
 export function App() {
   // Auth state
@@ -69,9 +77,8 @@ export function App() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, 'A' | 'B' | 'C' | 'D'>>({});
   
-  // 45 seconds countdown timer per question
-  const [secondsRemaining, setSecondsRemaining] = useState(QUESTION_TIME_SECONDS);
-  const [extraTimeUsed, setExtraTimeUsed] = useState<Record<string, boolean>>({});
+  // Countdown timer per question based on difficulty
+  const [secondsRemaining, setSecondsRemaining] = useState(45);
   const [submitting, setSubmitting] = useState(false);
 
   // Result state (clean final score only, no answer leak)
@@ -150,32 +157,35 @@ export function App() {
   // Move to next question or auto-submit when on last question
   const handleNextQuestion = () => {
     if (currentIdxRef.current < questionsRef.current.length - 1) {
-      setCurrentIdx((prev) => prev + 1);
-      setSecondsRemaining(QUESTION_TIME_SECONDS);
+      const nextIdx = currentIdxRef.current + 1;
+      const nextQ = questionsRef.current[nextIdx];
+      setCurrentIdx(nextIdx);
+      setSecondsRemaining(getTimeForQuestion(nextQ?.difficulty));
     } else {
       handleSubmitExam();
     }
   };
 
-  // 45s timer for each question
+  // Timer for each question based on difficulty
   useEffect(() => {
-    if (!examStarted || result) return;
+    if (!examStarted || result || questions.length === 0) return;
 
-    setSecondsRemaining(QUESTION_TIME_SECONDS);
+    const currentQ = questions[currentIdx];
+    const initialDuration = getTimeForQuestion(currentQ?.difficulty);
+    setSecondsRemaining(initialDuration);
 
     const timer = setInterval(() => {
       setSecondsRemaining((prev) => {
         if (prev <= 1) {
-          // Time expired for this question: advance to next question
           handleNextQuestion();
-          return QUESTION_TIME_SECONDS;
+          return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [examStarted, currentIdx, result]);
+  }, [examStarted, currentIdx, result, questions]);
 
   // Auth handler
   const handleAuthSubmit = async (e: React.FormEvent) => {
@@ -248,9 +258,8 @@ export function App() {
       setSessionId(data.sessionId);
       setQuestions(data.questions);
       setSelectedAnswers({});
-      setExtraTimeUsed({});
       setCurrentIdx(0);
-      setSecondsRemaining(QUESTION_TIME_SECONDS);
+      setSecondsRemaining(getTimeForQuestion(data.questions[0]?.difficulty));
       setExamStarted(true);
       setResult(null);
     } catch (err: any) {
@@ -265,18 +274,6 @@ export function App() {
     setSelectedAnswers((prev) => ({
       ...prev,
       [q.id]: key,
-    }));
-  };
-
-  // Allow candidate to add +15 seconds once per question when time is below 15s
-  const handleAddExtraTime = () => {
-    const currentQ = questions[currentIdx];
-    if (!currentQ || extraTimeUsed[currentQ.id]) return;
-
-    setSecondsRemaining((prev) => prev + 15);
-    setExtraTimeUsed((prev) => ({
-      ...prev,
-      [currentQ.id]: true
     }));
   };
 
@@ -462,17 +459,7 @@ export function App() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* +15s Extra Time Button (Visible when seconds <= 15 and not yet used for this question) */}
-            {secondsRemaining <= 15 && !extraTimeUsed[currentQ.id] && (
-              <button
-                onClick={handleAddExtraTime}
-                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/25 transition animate-bounce"
-              >
-                +15s Extra
-              </button>
-            )}
-
-            {/* 45 Seconds Countdown Display */}
+            {/* Dynamic Countdown Display based on question difficulty */}
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-mono text-sm font-semibold border ${
               secondsRemaining <= 10 
                 ? 'bg-rose-500/15 text-rose-400 border-rose-500/40 animate-pulse' 
@@ -492,13 +479,13 @@ export function App() {
           </div>
         </header>
 
-        {/* Question Progress Bar (45s visual decrease) */}
+        {/* Question Progress Bar (visual decrease relative to question difficulty allocated time) */}
         <div className="w-full bg-slate-900 h-1.5 overflow-hidden">
           <div 
             className={`h-full transition-all duration-1000 ${
               secondsRemaining <= 10 ? 'bg-rose-500' : 'bg-indigo-500'
             }`}
-            style={{ width: `${(secondsRemaining / QUESTION_TIME_SECONDS) * 100}%` }}
+            style={{ width: `${(secondsRemaining / getTimeForQuestion(currentQ.difficulty)) * 100}%` }}
           />
         </div>
 
@@ -632,13 +619,13 @@ export function App() {
       <main className="max-w-4xl mx-auto px-4 py-12 w-full">
         <div className="text-center mb-10">
           <span className="px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
-            45 Seconds Per Question • Instant Final Score
+            Difficulty-Based Timers: Easy (45s) • Medium (60s) • Hard (75s)
           </span>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-white mt-3 tracking-tight">
             Select Assessment Difficulty
           </h1>
           <p className="text-slate-400 max-w-lg mx-auto text-sm sm:text-base mt-2">
-            Each question gives you strictly <strong>45 seconds</strong>. Once completed, your final score is calculated and securely stored in PostgreSQL without revealing answer keys.
+            Each question time is tailored to its complexity: <strong>45s</strong> for Easy, <strong>1 minute (60s)</strong> for Medium, and <strong>1 minute 15s (75s)</strong> for Hard.
           </p>
         </div>
 
