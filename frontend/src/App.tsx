@@ -81,6 +81,11 @@ export function App() {
   const [secondsRemaining, setSecondsRemaining] = useState(45);
   const [submitting, setSubmitting] = useState(false);
 
+  // Anti-cheat proctoring: tab switch / window blur counter & modal
+  const [tabSwitchCount, setTabSwitchCount] = useState(0);
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [warningMessage, setWarningMessage] = useState('');
+
   // Result state (clean final score only, no answer leak)
   const [result, setResult] = useState<ExamResult | null>(null);
 
@@ -165,6 +170,78 @@ export function App() {
       handleSubmitExam();
     }
   };
+
+  // Anti-Cheat: Detect Tab switching, Window blur, and Fullscreen exit
+  useEffect(() => {
+    if (!examStarted || result) return;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setTabSwitchCount((prev) => {
+          const newCount = prev + 1;
+          if (newCount >= 3) {
+            setWarningMessage('🚨 PROCTOR ALERT: You left the exam tab 3 times. Your test is being automatically submitted.');
+            setShowWarningModal(true);
+            setTimeout(() => {
+              handleSubmitExam();
+            }, 2000);
+          } else {
+            setWarningMessage(`⚠️ Warning ${newCount}/3: Leaving the exam tab is prohibited! Further attempts will auto-submit your test.`);
+            setShowWarningModal(true);
+          }
+          return newCount;
+        });
+      }
+    };
+
+    const handleWindowBlur = () => {
+      // Catch switching to secondary monitor or opening split windows
+      setTabSwitchCount((prev) => {
+        const newCount = prev + 1;
+        if (newCount >= 3) {
+          setWarningMessage('🚨 PROCTOR ALERT: Window focus lost 3 times. Exam is being auto-submitted.');
+          setShowWarningModal(true);
+          setTimeout(() => {
+            handleSubmitExam();
+          }, 2000);
+        } else {
+          setWarningMessage(`⚠️ Warning ${newCount}/3: Window lost focus! Please stay inside the assessment window.`);
+          setShowWarningModal(true);
+        }
+        return newCount;
+      });
+    };
+
+    // Block right-click context menu (inspect / search)
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    // Block keyboard shortcuts like Ctrl+C, Ctrl+V, Ctrl+T, Ctrl+W, F12
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        ['c', 'v', 'x', 'u', 't', 'n', 'w'].includes(e.key.toLowerCase())
+      ) {
+        e.preventDefault();
+      }
+      if (e.key === 'F12') {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleWindowBlur);
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleWindowBlur);
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [examStarted, result]);
 
   // Timer for each question based on difficulty
   useEffect(() => {
@@ -260,8 +337,17 @@ export function App() {
       setSelectedAnswers({});
       setCurrentIdx(0);
       setSecondsRemaining(getTimeForQuestion(data.questions[0]?.difficulty));
+      setTabSwitchCount(0);
+      setShowWarningModal(false);
       setExamStarted(true);
       setResult(null);
+
+      // Request browser fullscreen mode for proctored experience
+      try {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        }
+      } catch (err) {}
     } catch (err: any) {
       alert(err.message);
     } finally {
@@ -438,7 +524,7 @@ export function App() {
     );
   }
 
-  // 3. Active Test Taking Interface (45 Seconds STRICT per question)
+  // 3. Active Test Taking Interface (Full Screen Proctored View)
   if (examStarted && questions.length > 0) {
     const currentQ = questions[currentIdx];
     const selected = selectedAnswers[currentQ.id];
@@ -446,33 +532,62 @@ export function App() {
     const isLastQuestion = currentIdx === questions.length - 1;
 
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col">
-        {/* Top Header bar with Per-Question 45s Timer */}
-        <header className="glass-panel sticky top-0 z-30 px-6 py-4 flex items-center justify-between border-b border-slate-800">
+      <div className="min-h-screen bg-slate-950 flex flex-col w-full select-none">
+        {/* Anti-Cheat Tab Switch Warning Modal */}
+        {showWarningModal && (
+          <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="glass-panel p-8 rounded-3xl border border-rose-500/50 max-w-lg w-full text-center shadow-2xl">
+              <div className="w-16 h-16 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-400 flex items-center justify-center mx-auto mb-4 animate-bounce">
+                <XCircle className="w-10 h-10" />
+              </div>
+              <h2 className="text-xl font-bold text-white mb-2">Proctoring Security Alert</h2>
+              <p className="text-rose-300 text-sm mb-6 leading-relaxed">
+                {warningMessage}
+              </p>
+              <div className="p-3 bg-slate-900/80 rounded-xl text-xs text-slate-400 mb-6 border border-slate-800">
+                Switching tabs, copying question text, or using outside windows is tracked. Test auto-submits on 3rd violation.
+              </div>
+              <button
+                onClick={() => setShowWarningModal(false)}
+                className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition"
+              >
+                Return to Exam
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Top Header bar with Per-Question Dynamic Timer */}
+        <header className="glass-panel sticky top-0 z-30 px-6 py-4 flex items-center justify-between border-b border-slate-800 w-full">
           <div className="flex items-center gap-3">
             <span className="px-3 py-1 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-bold tracking-wider">
-              {difficulty} LEVEL
+              {currentQ.difficulty} LEVEL
             </span>
             <span className="hidden sm:inline text-slate-400 text-xs">
               Candidate: <strong className="text-white">{user.name}</strong>
             </span>
+            {tabSwitchCount > 0 && (
+              <span className="px-2.5 py-0.5 rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-mono font-semibold">
+                ⚠️ Violations: {tabSwitchCount}/3
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
             {/* Dynamic Countdown Display based on question difficulty */}
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-mono text-sm font-semibold border ${
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-mono text-base font-bold border ${
               secondsRemaining <= 10 
                 ? 'bg-rose-500/15 text-rose-400 border-rose-500/40 animate-pulse' 
                 : 'bg-slate-900 text-slate-200 border-slate-700'
             }`}>
-              <Clock className="w-4 h-4" />
-              <span>{secondsRemaining}s left</span>
+              <Clock className="w-5 h-5" />
+              <span>{secondsRemaining}s</span>
             </div>
 
             <button
               onClick={handleSubmitExam}
               disabled={submitting}
-              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-emerald-600/20 transition"
+              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-emerald-600/20 transition"
             >
               {submitting ? 'Submitting...' : 'Finish Exam'}
             </button>
@@ -480,7 +595,7 @@ export function App() {
         </header>
 
         {/* Question Progress Bar (visual decrease relative to question difficulty allocated time) */}
-        <div className="w-full bg-slate-900 h-1.5 overflow-hidden">
+        <div className="w-full bg-slate-900 h-2 overflow-hidden">
           <div 
             className={`h-full transition-all duration-1000 ${
               secondsRemaining <= 10 ? 'bg-rose-500' : 'bg-indigo-500'
@@ -489,70 +604,70 @@ export function App() {
           />
         </div>
 
-        {/* Main Content Area */}
-        <div className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-8 flex flex-col lg:flex-row gap-6">
-          {/* Question Card */}
-          <div className="flex-1 flex flex-col justify-between glass-panel p-6 sm:p-8 rounded-2xl border border-slate-800">
+        {/* Main Content Area - Expands fully to device screen */}
+        <div className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-8 flex flex-col lg:flex-row gap-6">
+          {/* Question Card - Expands wide for readability on all displays */}
+          <div className="flex-1 flex flex-col justify-between glass-panel p-6 sm:p-10 rounded-3xl border border-slate-800 shadow-2xl">
             <div>
               {/* Question metadata */}
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-800">
                 <span className="text-xs uppercase tracking-widest text-indigo-400 font-bold">
                   Question {currentIdx + 1} of {questions.length} • {currentQ.category}
                 </span>
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-slate-400 font-mono">
                   {answeredCount} of {questions.length} Answered
                 </span>
               </div>
 
-              {/* Question Statement */}
-              <h2 className="text-xl sm:text-2xl font-semibold text-white leading-relaxed mb-6">
+              {/* Question Statement - Large, crisp typography */}
+              <h2 className="text-2xl sm:text-3xl font-semibold text-white leading-relaxed mb-8">
                 {currentQ.question_text}
               </h2>
 
-              {/* 4 Options Grid */}
-              <div className="space-y-3">
+              {/* 4 Options Grid - Spacious interactive buttons */}
+              <div className="space-y-4">
                 {currentQ.options.map((opt) => {
                   const isChecked = selected === opt.key;
                   return (
                     <button
                       key={opt.key}
                       onClick={() => handleSelectOption(opt.key)}
-                      className={`w-full p-4 rounded-xl border text-left flex items-start gap-3 transition-all ${
+                      className={`w-full p-5 rounded-2xl border text-left flex items-start gap-4 transition-all ${
                         isChecked 
-                          ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-md shadow-indigo-500/10' 
+                          ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-lg shadow-indigo-500/15' 
                           : 'glass-card border-slate-800 text-slate-300 hover:border-slate-700'
                       }`}
                     >
-                      <span className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
+                      <span className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 transition-colors ${
                         isChecked ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400'
                       }`}>
                         {opt.key}
                       </span>
-                      <span className="text-sm sm:text-base leading-snug pt-0.5">{opt.text}</span>
+                      <span className="text-base sm:text-lg leading-snug pt-1">{opt.text}</span>
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* Advance Button (Explicit Next or auto after 45s) */}
-            <div className="flex items-center justify-end mt-8 pt-6 border-t border-slate-800">
+            {/* Advance Button */}
+            <div className="flex items-center justify-end mt-10 pt-6 border-t border-slate-800">
               <button
                 onClick={handleNextQuestion}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition"
+                className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-base font-semibold shadow-lg shadow-indigo-600/20 transition"
               >
-                {isLastQuestion ? 'Submit Exam' : 'Next Question'} <ChevronRight className="w-4 h-4" />
+                {isLastQuestion ? 'Submit Exam' : 'Next Question'} <ChevronRight className="w-5 h-5" />
               </button>
             </div>
           </div>
 
           {/* Question Grid Navigator on the Side */}
-          <div className="w-full lg:w-72 glass-panel p-5 rounded-2xl border border-slate-800 h-fit">
+          <div className="w-full lg:w-80 glass-panel p-6 rounded-3xl border border-slate-800 h-fit">
             <h3 className="text-xs uppercase tracking-wider font-bold text-slate-400 mb-4 flex items-center gap-2">
               <Layers className="w-4 h-4 text-indigo-400" /> Exam Progress
             </h3>
 
-            <div className="grid grid-cols-6 lg:grid-cols-5 gap-2">
+            <div className="grid grid-cols-6 lg:grid-cols-5 gap-2.5">
               {questions.map((q, idx) => {
                 const isCurrent = idx === currentIdx;
                 const isAnswered = selectedAnswers[q.id] !== undefined;
@@ -560,9 +675,9 @@ export function App() {
                 return (
                   <div
                     key={q.id}
-                    className={`h-9 rounded-xl text-xs font-bold flex items-center justify-center transition-all ${
+                    className={`h-11 rounded-xl text-xs font-bold flex items-center justify-center transition-all ${
                       isCurrent
-                        ? 'ring-2 ring-indigo-400 bg-indigo-600 text-white'
+                        ? 'ring-2 ring-indigo-400 bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
                         : isAnswered
                         ? 'bg-emerald-600/30 border border-emerald-500/40 text-emerald-300'
                         : 'bg-slate-900 text-slate-400 border border-slate-800'
@@ -574,13 +689,13 @@ export function App() {
               })}
             </div>
 
-            <div className="mt-6 pt-4 border-t border-slate-800 space-y-2 text-xs text-slate-400">
+            <div className="mt-8 pt-4 border-t border-slate-800 space-y-2 text-xs text-slate-400">
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded bg-emerald-600/50 border border-emerald-500/60 inline-block" />
+                <span className="w-3.5 h-3.5 rounded bg-emerald-600/50 border border-emerald-500/60 inline-block" />
                 <span>Answered</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded bg-slate-900 border border-slate-800 inline-block" />
+                <span className="w-3.5 h-3.5 rounded bg-slate-900 border border-slate-800 inline-block" />
                 <span>Upcoming</span>
               </div>
             </div>
