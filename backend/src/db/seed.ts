@@ -14,418 +14,407 @@ export interface SeedQuestion {
 }
 
 /**
- * Curated comprehensive SQL Interview Questions
- * Perfectly balanced distribution of correct answers across A, B, C, and D.
+ * 100% Pure Standard SQL Questions (No PostgreSQL internals or engine specifics).
+ * Handcrafted to be crystal clear, beginner-friendly for Easy, and strictly focused on real SQL queries.
+ * Perfectly balanced across A, B, C, D (25% each).
  */
-export const SQL_INTERVIEW_QUESTIONS: SeedQuestion[] = [
-  // ================= EASY SQL QUESTIONS (12 Questions: 3 A, 3 B, 3 C, 3 D) =================
+export const PURE_SQL_QUESTIONS: SeedQuestion[] = [
+  // ================= EASY LEVEL (True Beginner & Everyday SQL) =================
+  // 1
+  {
+    difficulty: 'EASY',
+    category: 'SQL Basics',
+    question_text: 'Which SQL statement is used to extract data from a database table?',
+    option_a: 'SELECT',
+    option_b: 'EXTRACT',
+    option_c: 'GET',
+    option_d: 'OPEN',
+    correct_option: 'A',
+    explanation: 'SELECT is the fundamental SQL statement used to query and retrieve data from a table.'
+  },
+  // 2
   {
     difficulty: 'EASY',
     category: 'SQL Filtering',
-    question_text: 'Which SQL clause is used to filter records before any GROUP BY operations take place?',
-    option_a: 'WHERE',
-    option_b: 'HAVING',
-    option_c: 'ORDER BY',
+    question_text: 'Which clause is used in SQL to filter rows and return only those that meet a specified condition?',
+    option_a: 'ORDER BY',
+    option_b: 'WHERE',
+    option_c: 'GROUP BY',
     option_d: 'LIMIT',
-    correct_option: 'A',
-    explanation: 'WHERE filters rows individually before any groupings are formed. HAVING filters aggregated data after GROUP BY.'
-  },
-  {
-    difficulty: 'EASY',
-    category: 'SQL Aggregation',
-    question_text: 'Which aggregate function counts only rows where the specified column is NOT NULL?',
-    option_a: 'COUNT(*)',
-    option_b: 'COUNT(column_name)',
-    option_c: 'TOTAL(column_name)',
-    option_d: 'SUM(column_name)',
     correct_option: 'B',
-    explanation: 'COUNT(column_name) ignores NULL values in that column, whereas COUNT(*) counts all rows regardless of NULLs.'
+    explanation: 'The WHERE clause specifies search conditions to filter rows returned by a query.'
   },
+  // 3
   {
     difficulty: 'EASY',
     category: 'SQL Queries',
-    question_text: 'Which SQL keyword is placed immediately after SELECT to eliminate duplicate rows from the result?',
+    question_text: 'Which keyword eliminates duplicate rows from a query result set?',
     option_a: 'UNIQUE',
     option_b: 'DIFFERENT',
     option_c: 'DISTINCT',
     option_d: 'SINGLE',
     correct_option: 'C',
-    explanation: 'SELECT DISTINCT returns only unique/different values across the selected columns.'
+    explanation: 'SELECT DISTINCT returns only unique values across the specified columns.'
   },
-  {
-    difficulty: 'EASY',
-    category: 'SQL Joins',
-    question_text: 'Which JOIN returns all rows from the right table, and matching records from the left table?',
-    option_a: 'INNER JOIN',
-    option_b: 'LEFT JOIN',
-    option_c: 'CROSS JOIN',
-    option_d: 'RIGHT JOIN',
-    correct_option: 'D',
-    explanation: 'RIGHT JOIN (or RIGHT OUTER JOIN) guarantees all records from the right table are returned, filling NULLs for non-matching left rows.'
-  },
+  // 4
   {
     difficulty: 'EASY',
     category: 'SQL Sorting',
-    question_text: 'Which keyword sorts the result set in descending order?',
+    question_text: 'Which keyword is used to sort query results in ascending order (lowest to highest)?',
+    option_a: 'UP',
+    option_b: 'ORDER',
+    option_c: 'TOP',
+    option_d: 'ASC',
+    correct_option: 'D',
+    explanation: 'ASC sorts results in ascending order. (e.g. ORDER BY age ASC).'
+  },
+  // 5
+  {
+    difficulty: 'EASY',
+    category: 'SQL Sorting',
+    question_text: 'Which keyword sorts the result set in descending order (highest to lowest)?',
     option_a: 'DESC',
-    option_b: 'ASC',
-    option_c: 'DOWN',
-    option_d: 'REVERSE',
+    option_b: 'DOWN',
+    option_c: 'REVERSE',
+    option_d: 'HIGH',
     correct_option: 'A',
-    explanation: 'DESC stands for descending order (e.g. ORDER BY salary DESC). ASC is the default ascending order.'
+    explanation: 'DESC sorts records in descending order (e.g. ORDER BY salary DESC).'
   },
+  // 6
   {
     difficulty: 'EASY',
-    category: 'SQL Conditions',
-    question_text: 'Which operator is used to test whether a column value matches any value within a given list?',
-    option_a: 'BETWEEN',
-    option_b: 'IN',
-    option_c: 'LIKE',
-    option_d: 'EXISTS',
+    category: 'SQL Insertion',
+    question_text: 'Which SQL statement is used to insert new records into a database table?',
+    option_a: 'ADD INTO',
+    option_b: 'INSERT INTO',
+    option_c: 'UPDATE INTO',
+    option_d: 'CREATE ROW',
     correct_option: 'B',
-    explanation: 'The IN operator allows you to specify multiple values in a WHERE clause (e.g. WHERE department_id IN (1, 2, 3)).'
+    explanation: 'INSERT INTO adds one or more new rows into a table.'
   },
+  // 7
   {
     difficulty: 'EASY',
-    category: 'SQL Pattern Matching',
-    question_text: 'In standard SQL LIKE patterns, which wildcard character represents any sequence of zero or more characters?',
-    option_a: 'Question mark (?)',
-    option_b: 'Underscore (_)',
-    option_c: 'Percent sign (%)',
-    option_d: 'Asterisk (*)',
+    category: 'SQL Updates',
+    question_text: 'Which SQL statement is used to modify existing data in a table?',
+    option_a: 'MODIFY',
+    option_b: 'CHANGE',
+    option_c: 'UPDATE',
+    option_d: 'SET',
     correct_option: 'C',
-    explanation: 'In SQL LIKE clauses, % represents zero or more characters, while _ represents exactly one single character.'
+    explanation: 'UPDATE statement modifies existing records matching the WHERE filter in a table.'
   },
+  // 8
+  {
+    difficulty: 'EASY',
+    category: 'SQL Deletion',
+    question_text: 'Which SQL statement is used to delete records from a table?',
+    option_a: 'REMOVE',
+    option_b: 'CLEAR',
+    option_c: 'DISCARD',
+    option_d: 'DELETE FROM',
+    correct_option: 'D',
+    explanation: 'DELETE FROM removes rows from a table.'
+  },
+  // 9
+  {
+    difficulty: 'EASY',
+    category: 'SQL Aggregation',
+    question_text: 'Which aggregate function returns the total number of rows matching the query?',
+    option_a: 'COUNT()',
+    option_b: 'TOTAL()',
+    option_c: 'NUMBER()',
+    option_d: 'SUM()',
+    correct_option: 'A',
+    explanation: 'COUNT(*) calculates the total number of rows matching query criteria.'
+  },
+  // 10
+  {
+    difficulty: 'EASY',
+    category: 'SQL Aggregation',
+    question_text: 'Which aggregate function returns the total summed value of a numeric column?',
+    option_a: 'ADD()',
+    option_b: 'SUM()',
+    option_c: 'TOTAL()',
+    option_d: 'PLUS()',
+    correct_option: 'B',
+    explanation: 'SUM(column_name) returns the total numerical sum.'
+  },
+  // 11
+  {
+    difficulty: 'EASY',
+    category: 'SQL Aggregation',
+    question_text: 'Which function calculates the mathematical average of values in a numeric column?',
+    option_a: 'MEAN()',
+    option_b: 'MEDIAN()',
+    option_c: 'AVG()',
+    option_d: 'AVERAGE()',
+    correct_option: 'C',
+    explanation: 'AVG(column_name) returns the average value of a numeric column.'
+  },
+  // 12
+  {
+    difficulty: 'EASY',
+    category: 'SQL Wildcards',
+    question_text: 'In standard SQL, which operator is used along with wildcards (% and _) to search for a specified pattern in a column?',
+    option_a: 'MATCH',
+    option_b: 'SEARCH',
+    option_c: 'CONTAINS',
+    option_d: 'LIKE',
+    correct_option: 'D',
+    explanation: 'The LIKE operator searches for patterns in text columns using % and _.'
+  },
+  // 13
+  {
+    difficulty: 'EASY',
+    category: 'SQL Wildcards',
+    question_text: 'In a SQL LIKE pattern, which character represents exactly one single character?',
+    option_a: 'Underscore (_)',
+    option_b: 'Percent (%)',
+    option_c: 'Question mark (?)',
+    option_d: 'Asterisk (*)',
+    correct_option: 'A',
+    explanation: 'The underscore (_) represents exactly one single character in standard SQL LIKE clauses.'
+  },
+  // 14
+  {
+    difficulty: 'EASY',
+    category: 'SQL Ranges',
+    question_text: 'Which operator selects values within an inclusive range (e.g. BETWEEN 10 AND 50)?',
+    option_a: 'RANGE',
+    option_b: 'BETWEEN',
+    option_c: 'WITHIN',
+    option_d: 'INSIDE',
+    correct_option: 'B',
+    explanation: 'BETWEEN selects values within a given range, inclusive of both endpoints.'
+  },
+  // 15
+  {
+    difficulty: 'EASY',
+    category: 'SQL NULL Handling',
+    question_text: 'How do you check if a column contains a missing/null value in standard SQL?',
+    option_a: 'WHERE column = NULL',
+    option_b: 'WHERE column == NULL',
+    option_c: 'WHERE column IS NULL',
+    option_d: 'WHERE column IS EMPTY',
+    correct_option: 'C',
+    explanation: 'NULL values cannot be compared using =. You must use IS NULL or IS NOT NULL.'
+  },
+  // 16
   {
     difficulty: 'EASY',
     category: 'SQL Constraints',
-    question_text: 'Which SQL constraint uniquely identifies each record in a database table and disallows NULL values?',
+    question_text: 'Which constraint uniquely identifies every record in a table and cannot contain NULL values?',
     option_a: 'CHECK',
     option_b: 'FOREIGN KEY',
     option_c: 'UNIQUE',
     option_d: 'PRIMARY KEY',
     correct_option: 'D',
-    explanation: 'A PRIMARY KEY uniquely identifies every record in a table and strictly forbids NULL values. UNIQUE allows NULL.'
-  },
-  {
-    difficulty: 'EASY',
-    category: 'SQL DDL Commands',
-    question_text: 'Which command removes all rows from a table quickly without logging individual row deletions?',
-    option_a: 'TRUNCATE TABLE',
-    option_b: 'DELETE FROM',
-    option_c: 'DROP TABLE',
-    option_d: 'REMOVE TABLE',
-    correct_option: 'A',
-    explanation: 'TRUNCATE TABLE is a DDL operation that deallocates data pages rapidly without generating individual row-level undo logs.'
-  },
-  {
-    difficulty: 'EASY',
-    category: 'SQL NULL Handling',
-    question_text: 'How do you check if a column called "bonus" contains a NULL value in SQL?',
-    option_a: 'WHERE bonus = NULL',
-    option_b: 'WHERE bonus IS NULL',
-    option_c: 'WHERE bonus == NULL',
-    option_d: 'WHERE bonus IS EMPTY',
-    correct_option: 'B',
-    explanation: 'NULL represents an unknown value, so standard equality (=) fails. You must test with IS NULL or IS NOT NULL.'
-  },
-  {
-    difficulty: 'EASY',
-    category: 'SQL Set Operators',
-    question_text: 'What is the key difference between UNION and UNION ALL?',
-    option_a: 'UNION ALL removes duplicates whereas UNION preserves all rows',
-    option_b: 'UNION works only on integers whereas UNION ALL works on text',
-    option_c: 'UNION removes duplicate rows whereas UNION ALL includes all duplicate rows',
-    option_d: 'UNION sorts alphabetically whereas UNION ALL sorts numerically',
-    correct_option: 'C',
-    explanation: 'UNION performs an implicit distinct sort to eliminate duplicates; UNION ALL simply concatenates result sets faster without deduplication.'
-  },
-  {
-    difficulty: 'EASY',
-    category: 'SQL Functions',
-    question_text: 'Which scalar function returns the length of a string in PostgreSQL and standard SQL?',
-    option_a: 'LEN()',
-    option_b: 'SIZE()',
-    option_c: 'COUNT()',
-    option_d: 'LENGTH()',
-    correct_option: 'D',
-    explanation: 'In standard SQL and PostgreSQL, LENGTH(str) returns character count. LEN() is primarily Microsoft SQL Server.'
+    explanation: 'PRIMARY KEY uniquely identifies each row in a table and forbids NULLs.'
   },
 
-  // ================= MEDIUM SQL QUESTIONS (12 Questions: 3 A, 3 B, 3 C, 3 D) =================
-  {
-    difficulty: 'MEDIUM',
-    category: 'SQL Window Functions',
-    question_text: 'Which window function assigns consecutive ranks without skipping any rank numbers when tied scores occur?',
-    option_a: 'DENSE_RANK()',
-    option_b: 'RANK()',
-    option_c: 'ROW_NUMBER()',
-    option_d: 'NTILE()',
-    correct_option: 'A',
-    explanation: 'DENSE_RANK() does not skip rank integers on ties (e.g. 1, 2, 2, 3), whereas RANK() produces gaps (1, 2, 2, 4).'
-  },
-  {
-    difficulty: 'MEDIUM',
-    category: 'SQL Window Functions',
-    question_text: 'Which function allows accessing data from a preceding row in the same result set without using a self-join?',
-    option_a: 'LEAD()',
-    option_b: 'LAG()',
-    option_c: 'FIRST_VALUE()',
-    option_d: 'PREV()',
-    correct_option: 'B',
-    explanation: 'LAG(column, offset) provides access to a row at a given physical offset prior to the current position within the partition.'
-  },
-  {
-    difficulty: 'MEDIUM',
-    category: 'SQL Indexing',
-    question_text: 'Why does applying a function to an indexed column in the WHERE clause (e.g. WHERE UPPER(name) = "JOHN") often cause a full table scan?',
-    option_a: 'Because SQL does not allow functions in WHERE clauses',
-    option_b: 'Because string functions consume all database RAM',
-    option_c: 'Because standard B-tree indexes store raw column values, preventing direct index key lookup unless an expression index exists',
-    option_d: 'Because table locks prevent index reading during evaluation',
-    correct_option: 'C',
-    explanation: 'A normal B-Tree index indexes column values directly. Wrapping it in UPPER() forces the database to evaluate every row unless a functional/expression index is created.'
-  },
+  // ================= MEDIUM LEVEL (Joins, Grouping, Subqueries) =================
+  // 17
   {
     difficulty: 'MEDIUM',
     category: 'SQL Joins',
-    question_text: 'What kind of join produces the Cartesian product of two tables (every row in table 1 paired with every row in table 2)?',
-    option_a: 'NATURAL JOIN',
-    option_b: 'FULL OUTER JOIN',
-    option_c: 'INNER JOIN',
-    option_d: 'CROSS JOIN',
-    correct_option: 'D',
-    explanation: 'CROSS JOIN pairs every row of the first table with every row of the second table, yielding (N x M) total rows.'
+    question_text: 'Which JOIN returns only the rows that have matching values in both joined tables?',
+    option_a: 'INNER JOIN',
+    option_b: 'LEFT JOIN',
+    option_c: 'RIGHT JOIN',
+    option_d: 'FULL OUTER JOIN',
+    correct_option: 'A',
+    explanation: 'INNER JOIN selects records that have matching values in both tables.'
   },
+  // 18
+  {
+    difficulty: 'MEDIUM',
+    category: 'SQL Joins',
+    question_text: 'Which JOIN returns all records from the left table, and the matched records from the right table (with NULLs for non-matches)?',
+    option_a: 'INNER JOIN',
+    option_b: 'LEFT JOIN',
+    option_c: 'CROSS JOIN',
+    option_d: 'RIGHT JOIN',
+    correct_option: 'B',
+    explanation: 'LEFT JOIN (or LEFT OUTER JOIN) returns all records from the left table and matched records from the right.'
+  },
+  // 19
+  {
+    difficulty: 'MEDIUM',
+    category: 'SQL Grouping',
+    question_text: 'Which clause is used to filter aggregated data resulting from a GROUP BY statement?',
+    option_a: 'WHERE',
+    option_b: 'ORDER BY',
+    option_c: 'HAVING',
+    option_d: 'FILTER',
+    correct_option: 'C',
+    explanation: 'HAVING is used to filter groups based on aggregate conditions (e.g. HAVING COUNT(*) > 5).'
+  },
+  // 20
+  {
+    difficulty: 'MEDIUM',
+    category: 'SQL Set Operators',
+    question_text: 'What is the main difference between UNION and UNION ALL?',
+    option_a: 'UNION sorts alphabetically while UNION ALL sorts numerically',
+    option_b: 'UNION ALL removes duplicates while UNION keeps them',
+    option_c: 'UNION works only on text columns while UNION ALL works on numbers',
+    option_d: 'UNION removes duplicate rows while UNION ALL includes all duplicate rows',
+    correct_option: 'D',
+    explanation: 'UNION deduplicates the combined results, whereas UNION ALL preserves duplicates and executes faster.'
+  },
+  // 21
+  {
+    difficulty: 'MEDIUM',
+    category: 'SQL Grouping',
+    question_text: 'In what sequence does a database execute these SQL clauses conceptually?',
+    option_a: 'FROM -> WHERE -> GROUP BY -> HAVING -> SELECT -> ORDER BY',
+    option_b: 'SELECT -> FROM -> WHERE -> GROUP BY -> HAVING -> ORDER BY',
+    option_c: 'WHERE -> FROM -> SELECT -> GROUP BY -> HAVING -> ORDER BY',
+    option_d: 'FROM -> SELECT -> WHERE -> ORDER BY -> GROUP BY -> HAVING',
+    correct_option: 'A',
+    explanation: 'Logical query processing starts with FROM, then WHERE, GROUP BY, HAVING, SELECT, and finally ORDER BY.'
+  },
+  // 22
   {
     difficulty: 'MEDIUM',
     category: 'SQL Subqueries',
-    question_text: 'What characterizes a Correlated Subquery in SQL?',
-    option_a: 'A subquery that references columns from the outer query and evaluates once for every candidate row of the outer query',
-    option_b: 'A subquery that executes only once before the main query begins',
-    option_c: 'A subquery that writes results to a temporary table on disk',
-    option_d: 'A subquery that can only be placed inside the FROM clause',
-    correct_option: 'A',
-    explanation: 'A correlated subquery depends on values from the outer query for its evaluation, re-executing for each row processed by the outer statement.'
-  },
-  {
-    difficulty: 'MEDIUM',
-    category: 'SQL Aggregations',
-    question_text: 'What will be the result of SELECT COUNT(1) FROM table_name compared to SELECT COUNT(*)?',
-    option_a: 'COUNT(1) only counts rows where primary key is positive',
-    option_b: 'They produce identical results in modern SQL query optimizers',
-    option_c: 'COUNT(*) excludes NULL primary keys whereas COUNT(1) does not',
-    option_d: 'COUNT(1) is always 10 times slower than COUNT(*)',
+    question_text: 'Which operator checks if a subquery returns at least one row, evaluating to TRUE or FALSE?',
+    option_a: 'IN',
+    option_b: 'EXISTS',
+    option_c: 'ANY',
+    option_d: 'CONTAINS',
     correct_option: 'B',
-    explanation: 'In modern relational database engines (PostgreSQL, MySQL, Oracle), COUNT(1) and COUNT(*) parse to identical query plans counting all rows.'
+    explanation: 'EXISTS returns TRUE if the subquery returns one or more records.'
   },
+  // 23
   {
     difficulty: 'MEDIUM',
-    category: 'SQL NULL Semantics',
-    question_text: 'In three-valued logic (3VL), what is the evaluation of: SELECT 1 WHERE NULL = NULL; ?',
-    option_a: 'Returns 1 because NULL is identical to NULL',
-    option_b: 'Throws a syntax error',
-    option_c: 'Returns nothing (empty set) because NULL = NULL evaluates to UNKNOWN, which falsifies the WHERE filter',
-    option_d: 'Returns 0',
+    category: 'SQL Functions',
+    question_text: 'Which standard SQL function returns the first non-null value from a list of expressions?',
+    option_a: 'NVL()',
+    option_b: 'IFNULL()',
+    option_c: 'COALESCE()',
+    option_d: 'ISNULL()',
     correct_option: 'C',
-    explanation: 'NULL represents missing/unknown information. Comparing NULL = NULL yields UNKNOWN (neither TRUE nor FALSE), so WHERE excludes it.'
+    explanation: 'COALESCE(val1, val2, ...) is standard ANSI SQL that returns the first non-null value in the argument list.'
   },
+  // 24
   {
     difficulty: 'MEDIUM',
-    category: 'SQL CTEs',
-    question_text: 'What SQL clause introduces a Common Table Expression (CTE)?',
-    option_a: 'LET',
-    option_b: 'DECLARE',
-    option_c: 'HAVING',
-    option_d: 'WITH',
+    category: 'SQL Window Functions',
+    question_text: 'What SQL clause defines the partition and order over which a window function operates?',
+    option_a: 'PARTITION',
+    option_b: 'GROUP',
+    option_c: 'WINDOW BY',
+    option_d: 'OVER()',
     correct_option: 'D',
-    explanation: 'A Common Table Expression is defined using the WITH keyword (e.g. WITH cte_name AS (SELECT ...)).'
-  },
-  {
-    difficulty: 'MEDIUM',
-    category: 'SQL ACID Transactions',
-    question_text: 'Which ACID property guarantees that once a transaction has committed, its changes survive system crashes or power failures?',
-    option_a: 'Durability',
-    option_b: 'Atomicity',
-    option_c: 'Consistency',
-    option_d: 'Isolation',
-    correct_option: 'A',
-    explanation: 'Durability ensures committed transaction changes are permanently written into non-volatile storage (WAL / disk) and survive crashes.'
-  },
-  {
-    difficulty: 'MEDIUM',
-    category: 'SQL Data Integrity',
-    question_text: 'What does ON DELETE CASCADE specify on a Foreign Key constraint?',
-    option_a: 'Prevents the parent record from ever being deleted',
-    option_b: 'Automatically deletes corresponding child rows when the referenced parent row is deleted',
-    option_c: 'Sets foreign key values in child rows to 0',
-    option_d: 'Logs a warning in database error logs without deleting anything',
-    correct_option: 'B',
-    explanation: 'ON DELETE CASCADE automatically cascades deletion to referencing child records when a parent record is deleted.'
-  },
-  {
-    difficulty: 'MEDIUM',
-    category: 'SQL Performance',
-    question_text: 'Which SQL command displays the execution plan and cost estimates generated by the database optimizer?',
-    option_a: 'PROFILE',
-    option_b: 'DESCRIBE',
-    option_c: 'EXPLAIN',
-    option_d: 'ANALYZE PLAN',
-    correct_option: 'C',
-    explanation: 'EXPLAIN (or EXPLAIN ANALYZE in PostgreSQL) displays the query execution plan, index scans, join algorithms, and execution timings.'
-  },
-  {
-    difficulty: 'MEDIUM',
-    category: 'SQL Window Partitioning',
-    question_text: 'In the window clause "OVER (PARTITION BY dept_id ORDER BY salary DESC)", what does PARTITION BY do?',
-    option_a: 'Physical disk partitioning of the underlying table storage',
-    option_b: 'Deletes duplicate dept_id records',
-    option_c: 'Groups rows into summary rows like GROUP BY does',
-    option_d: 'Divides the rows into logical subsets for calculation while retaining each individual row in the output',
-    correct_option: 'D',
-    explanation: 'PARTITION BY breaks calculation into subsets without reducing rows to single summary rows.'
+    explanation: 'The OVER() clause defines the window framing, partitioning, and ordering for window functions.'
   },
 
-  // ================= HARD SQL QUESTIONS (12 Questions: 3 A, 3 B, 3 C, 3 D) =================
+  // ================= HARD LEVEL (Advanced SQL, CTEs, Window Functions) =================
+  // 25
   {
     difficulty: 'HARD',
-    category: 'SQL Isolation Levels',
-    question_text: 'Which PostgreSQL transaction isolation level uses Serializable Snapshot Isolation (SSI) to completely prevent Write Skew and Phantom Reads?',
-    option_a: 'SERIALIZABLE',
-    option_b: 'REPEATABLE READ',
-    option_c: 'READ COMMITTED',
-    option_d: 'READ UNCOMMITTED',
+    category: 'SQL Window Functions',
+    question_text: 'What is the key difference between RANK() and DENSE_RANK() in standard SQL window functions?',
+    option_a: 'DENSE_RANK() does not skip rank numbers when ties occur, whereas RANK() leaves gaps in the sequence',
+    option_b: 'RANK() does not skip rank numbers when ties occur, whereas DENSE_RANK() leaves gaps',
+    option_c: 'RANK() only works with integer columns whereas DENSE_RANK() works with text',
+    option_d: 'DENSE_RANK() can only be used with SUM()',
     correct_option: 'A',
-    explanation: 'SERIALIZABLE is the strictest isolation level and uses SSI (predicate locks) to prevent all concurrency anomalies including write skew.'
+    explanation: 'When ties occur (e.g. two items tied for 1st place), RANK() assigns 1, 1, 3. DENSE_RANK() assigns 1, 1, 2 without gaps.'
   },
+  // 26
   {
     difficulty: 'HARD',
-    category: 'SQL Performance & Indexing',
-    question_text: 'What is a "Covering Index" in relational database query optimization?',
-    option_a: 'An index that encrypts table data on physical storage',
-    option_b: 'An index that includes all columns referenced by a query, allowing index-only scans without fetching table heap pages',
-    option_c: 'An index that automatically duplicates itself on all worker nodes',
-    option_d: 'An index created exclusively on foreign keys',
+    category: 'SQL Window Functions',
+    question_text: 'Which window function accesses data from a preceding row at a specified physical offset within the partition?',
+    option_a: 'LEAD()',
+    option_b: 'LAG()',
+    option_c: 'PREV()',
+    option_d: 'FIRST_VALUE()',
     correct_option: 'B',
-    explanation: 'A covering index satisfies all columns needed by SELECT and WHERE directly from the index tree, eliminating expensive table heap lookups (Index-Only Scan).'
+    explanation: 'LAG(column, offset) allows reading data from a prior row within the window without performing a self-join.'
   },
+  // 27
   {
     difficulty: 'HARD',
-    category: 'PostgreSQL Architecture',
-    question_text: 'Why does PostgreSQL require the VACUUM process to run on tables?',
-    option_a: 'To repair corrupted B-tree indexes automatically',
-    option_b: 'To defragment operating system disk partitions',
-    option_c: 'To reclaim dead tuple space created by MVCC updates and deletes and prevent transaction ID wraparound',
-    option_d: 'To convert tables from row format to columnar format',
+    category: 'SQL CTEs',
+    question_text: 'What SQL keyword introduces a Common Table Expression (CTE) to create a temporary named result set?',
+    option_a: 'LET',
+    option_b: 'DECLARE',
+    option_c: 'WITH',
+    option_d: 'DEFINE',
     correct_option: 'C',
-    explanation: 'PostgreSQL MVCC writes new row versions on UPDATE and marks rows as dead on DELETE. VACUUM reclaims this space and freezes old transaction IDs.'
+    explanation: 'CTEs are created using the WITH keyword (e.g. WITH SalesCTE AS (SELECT ...)).'
   },
+  // 28
   {
     difficulty: 'HARD',
-    category: 'SQL Window Framing',
-    question_text: 'In SQL window functions, what is the default window frame when an ORDER BY clause is present without an explicit ROWS/RANGE clause?',
-    option_a: 'ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING',
-    option_b: 'ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING',
-    option_c: 'RANGE BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING',
-    option_d: 'RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW',
+    category: 'SQL Joins',
+    question_text: 'What type of join produces a Cartesian product (every row of table 1 paired with every row of table 2)?',
+    option_a: 'FULL OUTER JOIN',
+    option_b: 'NATURAL JOIN',
+    option_c: 'SELF JOIN',
+    option_d: 'CROSS JOIN',
     correct_option: 'D',
-    explanation: 'When ORDER BY is specified without a window frame, SQL defaults to RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW.'
+    explanation: 'CROSS JOIN pairs every single row in the first table with every row in the second table.'
   },
+  // 29
   {
     difficulty: 'HARD',
-    category: 'SQL Concurrency & Locks',
-    question_text: 'Which locking clause locks rows against concurrent updates while allowing other transactions to read if they do not request exclusive locks?',
-    option_a: 'SELECT ... FOR UPDATE',
-    option_b: 'SELECT ... FOR SHARE',
-    option_c: 'LOCK TABLE IN EXCLUSIVE MODE',
-    option_d: 'SET TRANSACTION READ ONLY',
+    category: 'SQL Subqueries',
+    question_text: 'What defines a Correlated Subquery in SQL?',
+    option_a: 'A subquery that references columns from the outer query and executes once for each row processed by the outer query',
+    option_b: 'A subquery that executes only once before the outer query runs',
+    option_c: 'A subquery that writes intermediate results into temporary physical tables',
+    option_d: 'A subquery that cannot contain a WHERE clause',
     correct_option: 'A',
-    explanation: 'SELECT ... FOR UPDATE places an exclusive row-level lock on selected records, blocking other FOR UPDATE or UPDATE statements until the transaction concludes.'
+    explanation: 'A correlated subquery references values in the outer query, evaluating once for every candidate row of the outer statement.'
   },
+  // 30
   {
     difficulty: 'HARD',
-    category: 'SQL Recursive Queries',
-    question_text: 'What two query blocks are combined with UNION ALL inside a standard Recursive Common Table Expression (CTE)?',
-    option_a: 'A temporary table block and a trigger block',
-    option_b: 'An Anchor Member (base case) and a Recursive Member (referencing the CTE itself)',
-    option_c: 'An aggregated query and an unaggregated query',
-    option_d: 'A materialized view and a foreign table',
+    category: 'SQL Window Functions',
+    question_text: 'Which function divides rows in an ordered partition into a specified number of approximately equal groups (e.g. quartiles)?',
+    option_a: 'BUCKET()',
+    option_b: 'NTILE()',
+    option_c: 'PARTITION_COUNT()',
+    option_d: 'CHUNK()',
     correct_option: 'B',
-    explanation: 'Recursive CTEs consist of an Anchor member executing once to seed the recursion, and a Recursive member referencing the CTE until empty.'
+    explanation: 'NTILE(n) distributes rows in an ordered partition into n roughly equal numbered buckets.'
   },
+  // 31
   {
     difficulty: 'HARD',
-    category: 'PostgreSQL Index Types',
-    question_text: 'Which PostgreSQL index type is specifically designed for indexing composite elements, full-text search vectors, and JSONB keys/values?',
-    option_a: 'BRIN Index',
-    option_b: 'Hash Index',
-    option_c: 'GIN (Generalized Inverted Index)',
-    option_d: 'B-Tree Index',
+    category: 'SQL Logic',
+    question_text: 'Under three-valued logic (3VL) in standard SQL, what does comparing (NULL = NULL) evaluate to in a WHERE clause?',
+    option_a: 'TRUE',
+    option_b: 'FALSE',
+    option_c: 'UNKNOWN (which is treated as false by WHERE filters)',
+    option_d: 'NULL Pointer Exception',
     correct_option: 'C',
-    explanation: 'GIN (Generalized Inverted Index) maps component values (words, array elements, JSON keys) to row pointers, perfect for JSONB and full-text search.'
+    explanation: 'In SQL, NULL represents missing information. NULL = NULL yields UNKNOWN, so the WHERE filter excludes it.'
   },
+  // 32
   {
     difficulty: 'HARD',
-    category: 'SQL Join Algorithms',
-    question_text: 'Which physical join algorithm builds an in-memory hash table on the smaller relation and then scans the larger relation to find matches?',
-    option_a: 'Nested Loop Join',
-    option_b: 'Merge Join',
-    option_c: 'Cartesian Loop Join',
-    option_d: 'Hash Join',
+    category: 'SQL Transactions',
+    question_text: 'In database transaction management (ACID), which property ensures that all operations in a transaction either all succeed or all fail together?',
+    option_a: 'Consistency',
+    option_b: 'Isolation',
+    option_c: 'Durability',
+    option_d: 'Atomicity',
     correct_option: 'D',
-    explanation: 'A Hash Join hashes the join key of the smaller build table into memory and probes it by scanning the probe table in O(N + M) time.'
-  },
-  {
-    difficulty: 'HARD',
-    category: 'SQL Optimization & Indexing',
-    question_text: 'When should a BRIN (Block Range Index) be preferred over a standard B-Tree index in PostgreSQL?',
-    option_a: 'On very large append-only tables where column values correlate physically with their storage order (e.g. timestamp or serial IDs)',
-    option_b: 'On small lookup tables with fewer than 100 records',
-    option_c: 'On columns containing randomly distributed UUIDs',
-    option_d: 'When queries frequently perform full-text pattern searches',
-    correct_option: 'A',
-    explanation: 'BRIN indexes store minimum and maximum values for blocks of pages. They take fractions of the space of B-Trees and excel at naturally sorted sequential data.'
-  },
-  {
-    difficulty: 'HARD',
-    category: 'SQL Grouping Extensions',
-    question_text: 'Which SQL GROUP BY extension produces all possible combinations of subtotals and a grand total for specified columns (2^n combinations)?',
-    option_a: 'ROLLUP',
-    option_b: 'CUBE',
-    option_c: 'GROUPING SETS',
-    option_d: 'PIVOT',
-    correct_option: 'B',
-    explanation: 'CUBE(A, B) generates groupings for (A,B), (A), (B), and (), representing all 2^N dimensional combinations. ROLLUP creates hierarchical subtotals.'
-  },
-  {
-    difficulty: 'HARD',
-    category: 'PostgreSQL Internals',
-    question_text: 'What is the purpose of Write-Ahead Logging (WAL) in PostgreSQL database transactions?',
-    option_a: 'To store human-readable debug audit logs for administrators',
-    option_b: 'To cache active queries in shared memory',
-    option_c: 'To guarantee durability and atomicity by ensuring all modifications are logged to durable disk before dirty data buffer pages are flushed',
-    option_d: 'To translate SQL syntax into low-level C instructions',
-    correct_option: 'C',
-    explanation: 'WAL ensures transactional integrity and crash recovery: logs are written to disk sequentially before data files are modified, satisfying ACID Durability.'
-  },
-  {
-    difficulty: 'HARD',
-    category: 'SQL NULL Aggregations',
-    question_text: 'Given a table "t" with 3 rows containing values: 10, NULL, and 20. What is the output of: SELECT AVG(val), SUM(val) / COUNT(*) FROM t; ?',
-    option_a: 'Both return 15',
-    option_b: 'Both return 10',
-    option_c: 'AVG(val) throws an error; the second returns 10',
-    option_d: 'AVG(val) returns 15 (ignores NULL, 30/2); SUM(val)/COUNT(*) returns 10 (30/3 including the NULL row)',
-    correct_option: 'D',
-    explanation: 'AVG(val) computes sum / non-null rows (30 / 2 = 15). COUNT(*) counts all rows including NULL (3), yielding 30 / 3 = 10.'
+    explanation: 'Atomicity ensures that a transaction is all-or-nothing: if any statement fails, the entire transaction rolls back.'
   }
 ];
 
 export const seedQuestions = async (): Promise<void> => {
-  // Clear any existing generic questions to ensure 100% SQL focused curriculum
+  // Clear any existing questions to guarantee pure standard SQL curriculum
   await query('TRUNCATE TABLE questions CASCADE');
 
-  for (const q of SQL_INTERVIEW_QUESTIONS) {
+  for (const q of PURE_SQL_QUESTIONS) {
     const id = uuidv4();
     await query(
       `INSERT INTO questions (id, difficulty, category, question_text, option_a, option_b, option_c, option_d, correct_option, explanation)
@@ -439,7 +428,7 @@ export const seedQuestions = async (): Promise<void> => {
 if (require.main === module) {
   seedQuestions()
     .then(() => {
-      console.log('Successfully seeded 100% SQL-focused interview questions with balanced A/B/C/D distribution.');
+      console.log('Successfully seeded 100% Pure Standard SQL Questions.');
       process.exit(0);
     })
     .catch((err) => {
