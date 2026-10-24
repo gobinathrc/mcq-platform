@@ -215,30 +215,57 @@ export function App() {
     // Block right-click context menu (inspect / search)
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
+      return false;
+    };
+
+    // Block text selection & drag-and-drop actions completely
+    const handleSelectStart = (e: Event) => {
+      e.preventDefault();
+      return false;
+    };
+
+    const handleDragStart = (e: DragEvent) => {
+      e.preventDefault();
+      return false;
+    };
+
+    const handleCopyCut = (e: ClipboardEvent) => {
+      e.preventDefault();
+      return false;
     };
 
     // Block keyboard shortcuts like Ctrl+C, Ctrl+V, Ctrl+T, Ctrl+W, F12
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
         (e.ctrlKey || e.metaKey) &&
-        ['c', 'v', 'x', 'u', 't', 'n', 'w'].includes(e.key.toLowerCase())
+        ['c', 'v', 'x', 'u', 't', 'n', 'w', 'a', 's', 'p'].includes(e.key.toLowerCase())
       ) {
         e.preventDefault();
+        return false;
       }
       if (e.key === 'F12') {
         e.preventDefault();
+        return false;
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('blur', handleWindowBlur);
     document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('selectstart', handleSelectStart);
+    document.addEventListener('dragstart', handleDragStart);
+    document.addEventListener('copy', handleCopyCut);
+    document.addEventListener('cut', handleCopyCut);
     document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('blur', handleWindowBlur);
       document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('selectstart', handleSelectStart);
+      document.removeEventListener('dragstart', handleDragStart);
+      document.removeEventListener('copy', handleCopyCut);
+      document.removeEventListener('cut', handleCopyCut);
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [examStarted, result]);
