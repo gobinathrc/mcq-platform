@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import authRoutes from './routes/auth';
 import testRoutes from './routes/test';
+import adminRoutes from './routes/admin';
 
 export const createApp = () => {
   const app = express();
@@ -17,6 +18,7 @@ export const createApp = () => {
   // API Routes
   app.use('/api/auth', authRoutes);
   app.use('/api/test', testRoutes);
+  app.use('/api/admin', adminRoutes);
 
   return app;
 };
