@@ -169,6 +169,12 @@ export function App() {
 
       const data = await res.json();
       if (!res.ok) {
+        if (res.status === 401) {
+          // Token expired or server restarted with new JWT_SECRET
+          handleLogout();
+          alert('Your session has expired. Please sign in again.');
+          return;
+        }
         throw new Error(data.error || 'Failed to start exam session');
       }
 
