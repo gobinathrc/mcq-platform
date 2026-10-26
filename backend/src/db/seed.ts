@@ -1,26 +1,6 @@
 import { query } from './pool';
 import { v4 as uuidv4 } from 'uuid';
 
-export interface CurriculumTopic {
-  id: string;
-  code: string;
-  title: string;
-  subtitle: string;
-  icon: string;
-}
-
-export const CURRICULUM_TOPICS: CurriculumTopic[] = [
-  { id: 'ol', code: 'OL', title: 'THE OFFENSIVE LINE', subtitle: 'SQL & Data Engineering', icon: 'Shield' },
-  { id: 'cb', code: 'CB', title: 'SCOUTING COMBINE', subtitle: 'Descriptive Stats & EDA', icon: 'Zap' },
-  { id: 'hc', code: 'HC', title: "COACHES' CHALLENGE", subtitle: 'Inferential Stats & Hypotheses', icon: 'Flag' },
-  { id: 'oc', code: 'OC', title: 'THE PLAYBOOK', subtitle: 'Supervised Machine Learning', icon: 'Clipboard' },
-  { id: 'fs', code: 'FS', title: 'ZONE COVERAGE', subtitle: 'Unsupervised & Anomaly Detection', icon: 'Lock' },
-  { id: 'st', code: 'ST', title: 'CLOCK MANAGEMENT', subtitle: 'Time Series & Forecasting', icon: 'Clock' },
-  { id: 'qb', code: 'QB', title: 'THE FRANCHISE QB', subtitle: 'Deep Learning (DL)', icon: 'Cpu' },
-  { id: 'dc', code: 'DC', title: 'AUDIBLES & CALLING', subtitle: 'NLP & Generative AI', icon: 'Megaphone' },
-  { id: 'gm', code: 'GM', title: 'THE FRONT OFFICE', subtitle: 'MLOps & System Architecture', icon: 'Building2' },
-];
-
 export interface SeedQuestion {
   difficulty: 'ROOKIE' | 'PRO-BOWLER' | 'HALL OF FAMER';
   topic_id: string;
@@ -34,8 +14,9 @@ export interface SeedQuestion {
   explanation: string;
 }
 
-export const COMPREHENSIVE_QUESTION_BANK: SeedQuestion[] = [
+export const COMPLETE_CURRICULUM_BANK: SeedQuestion[] = [
   // ================= 1. THE OFFENSIVE LINE (SQL & Data Engineering) =================
+  // ROOKIE (Beginner SQL)
   {
     difficulty: 'ROOKIE',
     topic_id: 'ol',
@@ -46,360 +27,466 @@ export const COMPREHENSIVE_QUESTION_BANK: SeedQuestion[] = [
     option_c: 'HAVING',
     option_d: 'LIMIT',
     correct_option: 'B',
-    explanation: 'WHERE filters individual records before aggregation. HAVING filters aggregated data.'
+    explanation: 'WHERE filters rows before groupings are formed.'
+  },
+  {
+    difficulty: 'ROOKIE',
+    topic_id: 'ol',
+    category: 'SQL Basics',
+    question_text: 'Which SQL statement is used to retrieve data from a database table?',
+    option_a: 'SELECT',
+    option_b: 'GET',
+    option_c: 'EXTRACT',
+    option_d: 'PULL',
+    correct_option: 'A',
+    explanation: 'SELECT is used to query data from database tables.'
+  },
+  {
+    difficulty: 'ROOKIE',
+    topic_id: 'ol',
+    category: 'SQL Aggregates',
+    question_text: 'Which aggregate function counts only rows where the specified column is NOT NULL?',
+    option_a: 'COUNT(*)',
+    option_b: 'TOTAL()',
+    option_c: 'COUNT(column_name)',
+    option_d: 'SUM()',
+    correct_option: 'C',
+    explanation: 'COUNT(column_name) ignores NULL rows in that column.'
+  },
+  {
+    difficulty: 'ROOKIE',
+    topic_id: 'ol',
+    category: 'SQL Sorting',
+    question_text: 'Which keyword sorts SQL query results from highest to lowest?',
+    option_a: 'ASC',
+    option_b: 'DESC',
+    option_c: 'HIGH',
+    option_d: 'REVERSE',
+    correct_option: 'B',
+    explanation: 'DESC sorts records in descending order.'
+  },
+
+  // PRO-BOWLER (Medium SQL & Joins)
+  {
+    difficulty: 'PRO-BOWLER',
+    topic_id: 'ol',
+    category: 'SQL Joins',
+    question_text: 'Which JOIN returns all records from the left table and matching records from the right table, filling NULLs for non-matches?',
+    option_a: 'INNER JOIN',
+    option_b: 'CROSS JOIN',
+    option_c: 'LEFT JOIN',
+    option_d: 'FULL JOIN',
+    correct_option: 'C',
+    explanation: 'LEFT JOIN returns all left rows and matched right rows.'
+  },
+  {
+    difficulty: 'PRO-BOWLER',
+    topic_id: 'ol',
+    category: 'SQL Grouping',
+    question_text: 'Which clause is used to filter aggregated data produced by a GROUP BY clause?',
+    option_a: 'WHERE',
+    option_b: 'HAVING',
+    option_c: 'ORDER BY',
+    option_d: 'QUALIFY',
+    correct_option: 'B',
+    explanation: 'HAVING filters aggregate groups.'
   },
   {
     difficulty: 'PRO-BOWLER',
     topic_id: 'ol',
     category: 'SQL Window Functions',
-    question_text: 'Which window function assigns sequential integers without skipping numbers when values tie?',
+    question_text: 'Which window function assigns sequential rank numbers without leaving gaps when values tie?',
     option_a: 'DENSE_RANK()',
     option_b: 'RANK()',
     option_c: 'ROW_NUMBER()',
     option_d: 'NTILE()',
     correct_option: 'A',
-    explanation: 'DENSE_RANK() leaves no sequence gaps on tied values (e.g. 1, 1, 2).'
+    explanation: 'DENSE_RANK() does not skip rank numbers on ties (e.g., 1, 1, 2).'
+  },
+  {
+    difficulty: 'PRO-BOWLER',
+    topic_id: 'ol',
+    category: 'SQL CTEs',
+    question_text: 'Which SQL keyword introduces a Common Table Expression (CTE) to define a temporary named result set?',
+    option_a: 'WITH',
+    option_b: 'LET',
+    option_c: 'DECLARE',
+    option_d: 'TABLE',
+    correct_option: 'A',
+    explanation: 'WITH introduces a Common Table Expression.'
+  },
+
+  // HALL OF FAMER (Advanced SQL & Data Engineering)
+  {
+    difficulty: 'HALL OF FAMER',
+    topic_id: 'ol',
+    category: 'Data Lake Architecture',
+    question_text: 'When designing a distributed data lake in Apache Parquet, what problem occurs when partitioning tables by high-cardinality timestamps down to the second?',
+    option_a: 'Data corruption in columnar snappy compression',
+    option_b: 'Small files problem causing excessive metadata overhead and slow query planning',
+    option_c: 'Loss of ACID isolation in object storage buckets',
+    option_d: 'Schema evolution locks',
+    correct_option: 'B',
+    explanation: 'High-cardinality partitions generate millions of tiny files, overwhelming query engines.'
   },
   {
     difficulty: 'HALL OF FAMER',
     topic_id: 'ol',
-    category: 'Data Engineering & Partitions',
-    question_text: 'When designing a distributed data lake in Apache Parquet, what issue arises when tables are partitioned on high-cardinality keys like timestamp down to the second?',
-    option_a: 'Data corruption in columnar compression',
-    option_b: 'Small files problem causing excessive metadata overhead on the query engine',
-    option_c: 'Loss of ACID isolation in object storage',
-    option_d: 'Schema evolution lockouts',
-    correct_option: 'B',
-    explanation: 'High cardinality partitioning creates millions of tiny files, overwhelming query planning and object storage metadata lookups.'
+    category: 'SQL Optimization',
+    question_text: 'What is a "Covering Index" in database optimization?',
+    option_a: 'An index that contains all columns requested by a query, allowing index-only scans without accessing the table heap',
+    option_b: 'An index that encrypts table pages on storage',
+    option_c: 'An index that automatically replicates to standby replicas',
+    option_d: 'An index placed only on foreign keys',
+    correct_option: 'A',
+    explanation: 'Covering indexes satisfy the entire query from the index tree without fetching heap tuples.'
   },
 
   // ================= 2. SCOUTING COMBINE (Descriptive Stats & EDA) =================
+  // ROOKIE
   {
     difficulty: 'ROOKIE',
     topic_id: 'cb',
     category: 'Descriptive Stats',
-    question_text: 'Which measure of central tendency is least sensitive to extreme outliers in a skewed numerical feature?',
+    question_text: 'Which measure of central tendency is least affected by extreme numerical outliers?',
     option_a: 'Mean',
     option_b: 'Standard Deviation',
     option_c: 'Median',
     option_d: 'Variance',
     correct_option: 'C',
-    explanation: 'Median is robust to outliers because it reflects the 50th percentile rank rather than arithmetic magnitude.'
+    explanation: 'Median is robust to outliers because it depends on rank rather than magnitudes.'
   },
+  {
+    difficulty: 'ROOKIE',
+    topic_id: 'cb',
+    category: 'EDA Basics',
+    question_text: 'In a standard box plot, what data interval does the Interquartile Range (IQR) represent?',
+    option_a: 'Between the Minimum and Maximum',
+    option_b: 'Between the 25th percentile (Q1) and 75th percentile (Q3)',
+    option_c: 'Between Mean - 1 Std Dev and Mean + 1 Std Dev',
+    option_d: 'Between the 10th and 90th percentiles',
+    correct_option: 'B',
+    explanation: 'IQR = Q3 - Q1, spanning the middle 50% of the dataset.'
+  },
+  // PRO-BOWLER
   {
     difficulty: 'PRO-BOWLER',
     topic_id: 'cb',
     category: 'EDA & Distributions',
-    question_text: 'In an exploratory data analysis, a distribution has a mean of 45 and a median of 32. What is the nature of its skewness?',
+    question_text: 'In an exploratory analysis of continuous salaries, Mean is $85,000 and Median is $52,000. What is the skewness?',
     option_a: 'Right-skewed (Positively skewed)',
     option_b: 'Left-skewed (Negatively skewed)',
     option_c: 'Symmetric Gaussian',
-    option_d: 'Zero kurtosis',
+    option_d: 'Zero variance',
     correct_option: 'A',
-    explanation: 'When Mean > Median, the long tail extends to the right (positive/right skew).'
+    explanation: 'When Mean > Median, the distribution exhibits a long right-hand tail.'
   },
+  // HALL OF FAMER
   {
     difficulty: 'HALL OF FAMER',
     topic_id: 'cb',
     category: 'Multicollinearity & VIF',
-    question_text: 'What does a Variance Inflation Factor (VIF) greater than 10 for an explanatory variable indicate?',
+    question_text: 'In linear regression diagnostics, what does a Variance Inflation Factor (VIF) greater than 10 for a feature indicate?',
     option_a: 'High heteroscedasticity across residuals',
-    option_b: 'Severe multicollinearity with other predictor variables',
-    option_c: 'Insufficient sample size for normal approximation',
-    option_d: 'Non-linear polynomial relationships',
+    option_b: 'Severe multicollinearity where the feature is heavily explained by other predictors',
+    option_c: 'Violation of residual normality',
+    option_d: 'High autocorrelation',
     correct_option: 'B',
-    explanation: 'A VIF above 5-10 indicates that more than 80-90% of the variance is explained by other predictors, inflating coefficient standard errors.'
+    explanation: 'VIF > 10 signifies severe multicollinearity, inflating coefficient standard errors.'
   },
 
-  // ================= 3. COACHES\' CHALLENGE (Inferential Stats & Hypotheses) =================
+  // ================= 3. COACHES' CHALLENGE (Inferential Stats & Hypotheses) =================
+  // ROOKIE
   {
     difficulty: 'ROOKIE',
     topic_id: 'hc',
     category: 'Hypothesis Testing',
-    question_text: 'What is a Type I error in statistical hypothesis testing?',
-    option_a: 'Failing to reject a false null hypothesis (False Negative)',
+    question_text: 'What constitutes a Type I error in statistical hypothesis testing?',
+    option_a: 'Failing to reject a false null hypothesis',
     option_b: 'Rejecting a true null hypothesis (False Positive)',
-    option_c: 'Selecting a non-random sample',
-    option_d: 'Calculating an incorrect p-value',
+    option_c: 'Sampling bias in observational studies',
+    option_d: 'Incorrect degrees of freedom',
     correct_option: 'B',
-    explanation: 'Type I error is falsely rejecting H0 when H0 is actually true (alpha rate).'
+    explanation: 'Type I error is falsely rejecting H0 when H0 is actually true.'
   },
+  // PRO-BOWLER
   {
     difficulty: 'PRO-BOWLER',
     topic_id: 'hc',
     category: 'A/B Testing & P-Values',
-    question_text: 'In an A/B test with an alpha threshold of 0.05, what does a calculated p-value of 0.018 mean?',
-    option_a: 'There is a 1.8% chance that the treatment is effective',
-    option_b: 'There is only a 1.8% probability of observing this effect (or more extreme) assuming the null hypothesis is true',
-    option_c: 'The statistical power of the experiment is 98.2%',
-    option_d: 'The alternative hypothesis has an 82% margin of error',
+    question_text: 'In an A/B test with alpha = 0.05, what does a calculated p-value of 0.02 strictly imply?',
+    option_a: 'There is a 98% probability that the variant is superior',
+    option_b: 'Assuming the null hypothesis is true, there is only a 2% chance of observing this effect (or more extreme)',
+    option_c: 'The statistical power of the test is 2%',
+    option_d: 'The experiment has a 2% margin of error',
     correct_option: 'B',
-    explanation: 'P-value is the probability of obtaining test results at least as extreme as the observed results, assuming the null hypothesis is correct.'
+    explanation: 'P-value is the probability of obtaining test results at least as extreme, given H0 is true.'
   },
+  // HALL OF FAMER
   {
     difficulty: 'HALL OF FAMER',
     topic_id: 'hc',
-    category: 'Multiple Testing & Bonferroni',
-    question_text: 'Why must multiple testing corrections (e.g. Benjamini-Hochberg FDR or Bonferroni) be applied when evaluating 20 simultaneous variant metrics?',
-    option_a: 'To adjust for non-normal sample sizes',
-    option_b: 'To control the inflated Family-Wise Error Rate (FWER) and prevent false discovery explosions',
-    option_c: 'To eliminate sample variance across test segments',
-    option_d: 'To reduce the required test run duration',
-    correct_option: 'B',
-    explanation: 'Testing 20 hypotheses at alpha=0.05 yields a ~64% chance of at least one false positive (1 - 0.95^20) without correction.'
+    category: 'Multiple Testing Correction',
+    question_text: 'Why must multiple testing corrections (e.g. Benjamini-Hochberg or Bonferroni) be used when testing 30 variant metrics simultaneously?',
+    option_a: 'To prevent inflated Family-Wise Error Rate (FWER) and false discovery explosions',
+    option_b: 'To reduce the required sample size',
+    option_c: 'To eliminate variance across user cohorts',
+    option_d: 'To convert one-tailed tests into two-tailed tests',
+    correct_option: 'A',
+    explanation: 'Testing multiple hypotheses without correction drastically inflates the chance of false positives.'
   },
 
   // ================= 4. THE PLAYBOOK (Supervised Machine Learning) =================
+  // ROOKIE
   {
     difficulty: 'ROOKIE',
     topic_id: 'oc',
     category: 'Supervised ML',
-    question_text: 'What is the primary trade-off modeled by L1 Regularization (Lasso) compared to L2 Regularization (Ridge)?',
-    option_a: 'Lasso drives non-essential feature weights strictly to zero, yielding sparse feature selection',
-    option_b: 'Lasso prevents multi-threading during gradient updates',
-    option_c: 'Ridge only works on classification models',
-    option_d: 'Lasso requires unnormalized target values',
+    question_text: 'What is the primary characteristic of L1 Regularization (Lasso) compared to L2 (Ridge)?',
+    option_a: 'Lasso drives uninformative feature weights strictly to zero for sparse feature selection',
+    option_b: 'Lasso only works for regression problems',
+    option_c: 'Ridge requires unnormalized target variables',
+    option_d: 'Lasso prevents gradient descent optimization',
     correct_option: 'A',
-    explanation: 'Lasso adds absolute penalties (|w|), producing sharp corners on the constraint boundary that zero out weights.'
+    explanation: 'Lasso penalizes absolute coefficients, setting unneeded weights to 0.'
   },
+  // PRO-BOWLER
   {
     difficulty: 'PRO-BOWLER',
     topic_id: 'oc',
     category: 'Ensemble Learning',
-    question_text: 'What is the key structural difference between Random Forest and Gradient Boosted Trees (XGBoost/LightGBM)?',
-    option_a: 'Random Forest trains deep trees in parallel independently; Boosted Trees train shallow trees sequentially on residual errors',
-    option_b: 'Boosted Trees can only be applied to continuous regression targets',
-    option_c: 'Random Forest uses gradient descent to prune decision trees',
-    option_d: 'Boosted trees do not support feature sampling',
+    question_text: 'How does Random Forest fundamentally differ from Gradient Boosted Decision Trees (XGBoost/LightGBM)?',
+    option_a: 'Random Forest trains deep trees in parallel independently; Gradient Boosting trains shallow trees sequentially to correct residual errors',
+    option_b: 'Boosting only works on classification models',
+    option_c: 'Random forest cannot handle categorical variables',
+    option_d: 'Boosted trees do not compute feature importance',
     correct_option: 'A',
-    explanation: 'Random Forest bags independent high-variance trees in parallel; boosting iteratively reduces bias by fitting each tree to the residual errors of prior trees.'
+    explanation: 'Random Forest averages independent trees; Boosting iteratively reduces residual errors.'
   },
+  // HALL OF FAMER
   {
     difficulty: 'HALL OF FAMER',
     topic_id: 'oc',
-    category: 'Loss Functions & Optimization',
-    question_text: 'Why does XGBoost incorporate second-order Taylor series expansion (Hessian) in its custom objective optimization?',
-    option_a: 'To guarantee monotonic convergence without learning rates',
-    option_b: 'To calculate optimal tree leaf weights and split gain scores analytically for any arbitrary differentiable loss function',
-    option_c: 'To eliminate the need for cross-validation',
-    option_d: 'To convert decision trees into linear vector spaces',
-    correct_option: 'B',
-    explanation: 'By approximating the loss with both gradient (g) and hessian (h), XGBoost evaluates leaf weights w* = -G/(H+lambda) in closed form.'
+    category: 'Loss Optimization',
+    question_text: 'Why does XGBoost use a second-order Taylor expansion (gradients and hessians) for its loss objective?',
+    option_a: 'To calculate optimal leaf split weights and split gains in closed-form for any arbitrary differentiable loss function',
+    option_b: 'To guarantee O(1) inference speed',
+    option_c: 'To eliminate cross-validation requirements',
+    option_d: 'To convert nonlinear decision boundaries into hyperplanes',
+    correct_option: 'A',
+    explanation: 'Using gradient g and hessian h allows analytical calculation of leaf values w* = -G/(H+lambda).'
   },
 
   // ================= 5. ZONE COVERAGE (Unsupervised & Anomaly Detection) =================
+  // ROOKIE
   {
     difficulty: 'ROOKIE',
     topic_id: 'fs',
     category: 'Clustering',
-    question_text: 'Which clustering algorithm requires specifying the number of clusters (K) in advance and assumes spherical clusters?',
+    question_text: 'Which clustering algorithm requires you to define the number of clusters (K) in advance?',
     option_a: 'DBSCAN',
     option_b: 'K-Means',
-    option_c: 'OPTICS',
-    option_d: 'Agglomerative Hierarchical',
+    option_c: 'Mean Shift',
+    option_d: 'OPTICS',
     correct_option: 'B',
-    explanation: 'K-Means partitions data into K predefined centroids using Euclidean distance, assuming spherical clusters of similar size.'
+    explanation: 'K-Means requires specifying K clusters before optimization.'
   },
+  // PRO-BOWLER
   {
     difficulty: 'PRO-BOWLER',
     topic_id: 'fs',
     category: 'Dimensionality Reduction',
-    question_text: 'In Principal Component Analysis (PCA), what mathematical construct do the principal component directions correspond to?',
-    option_a: 'The eigenvectors of the feature covariance matrix ordered by decreasing eigenvalues',
-    option_b: 'The inverse gradient of the residual error matrix',
-    option_c: 'The centroid distance vectors between clusters',
-    option_d: 'The L1 norm projection vectors of independent columns',
+    question_text: 'In Principal Component Analysis (PCA), what do the principal component directions correspond to?',
+    option_a: 'The eigenvectors of the feature covariance matrix sorted by decreasing eigenvalues',
+    option_b: 'The centroid distance vectors between clusters',
+    option_c: 'The inverse loss gradients',
+    option_d: 'The L1 norm projection axes',
     correct_option: 'A',
-    explanation: 'PCA diagonalizes the covariance matrix: eigenvectors define orthogonal axes of maximum variance, and eigenvalues quantify explained variance.'
+    explanation: 'PCA components are the eigenvectors of the covariance matrix, ordered by variance.'
   },
+  // HALL OF FAMER
   {
     difficulty: 'HALL OF FAMER',
     topic_id: 'fs',
     category: 'Anomaly Detection',
-    question_text: 'How does an Isolation Forest isolate anomalies much faster than normal data points?',
-    option_a: 'By fitting hyperplanes using support vector margins',
-    option_b: 'Anomalies reside in sparse regions and require fewer random recursive feature splits to isolate, resulting in significantly shorter path lengths in iTrees',
-    option_c: 'By computing cosine similarity against global cluster medoids',
-    option_d: 'By applying kernel density estimators to normalized projections',
-    correct_option: 'B',
-    explanation: 'Outliers require fewer random cuts to isolate from the rest of the sample, creating lower average tree depth/path length.'
+    question_text: 'How does an Isolation Forest identify anomalous observations faster than normal observations?',
+    option_a: 'Anomalies reside in sparse regions and require fewer random feature splits to isolate, resulting in shorter average path lengths in trees',
+    option_b: 'By computing Euclidean distances to the global cluster medoid',
+    option_c: 'By constructing support vector convex hulls',
+    option_d: 'By fitting Gaussian kernel densities',
+    correct_option: 'A',
+    explanation: 'Outliers are isolated quickly near tree roots, having noticeably shorter path lengths.'
   },
 
   // ================= 6. CLOCK MANAGEMENT (Time Series & Forecasting) =================
+  // ROOKIE
   {
     difficulty: 'ROOKIE',
     topic_id: 'st',
-    category: 'Time Series Fundamentals',
-    question_text: 'What property must a time series exhibit to be considered weakly stationary?',
-    option_a: 'Constant mean, constant variance, and autocovariance dependent only on lag distance (not time)',
-    option_b: 'Strict zero correlation between all time periods',
-    option_c: 'A monotonically increasing linear trend',
-    option_d: 'No cyclic or seasonal components over 12 months',
+    category: 'Time Series Basics',
+    question_text: 'What conditions are required for a time series to be considered weakly stationary?',
+    option_a: 'Constant mean, constant variance, and autocovariance that depends only on lag distance (not time)',
+    option_b: 'A constant upward linear trend',
+    option_c: 'Zero correlation between any two time steps',
+    option_d: 'Strict 12-month periodicity',
     correct_option: 'A',
-    explanation: 'Weak stationarity requires time-invariant mean and variance, and autocovariance that depends solely on time lag.'
+    explanation: 'Weak stationarity requires time-invariant mean and variance, and lag-dependent autocovariance.'
   },
+  // PRO-BOWLER
   {
     difficulty: 'PRO-BOWLER',
     topic_id: 'st',
     category: 'ARIMA Modeling',
-    question_text: 'In an ARIMA(p, d, q) specification, what does the parameter "d" represent?',
-    option_a: 'The order of the autoregressive lag polynomial',
-    option_b: 'The degree of differencing applied to make the series stationary',
-    option_c: 'The order of moving average forecast error terms',
-    option_d: 'The seasonal period multiplier',
+    question_text: 'In an ARIMA(p, d, q) model, what does the parameter "d" represent?',
+    option_a: 'The order of autoregressive lags',
+    option_b: 'The degree of differencing applied to make the time series stationary',
+    option_c: 'The number of moving average error terms',
+    option_d: 'The seasonal period length',
     correct_option: 'B',
-    explanation: 'd is the order of integration/differencing needed to eliminate non-stationary trend.'
+    explanation: 'd is the differencing order applied to eliminate trends.'
   },
+  // HALL OF FAMER
   {
     difficulty: 'HALL OF FAMER',
     topic_id: 'st',
-    category: 'Time Series Cross-Validation',
-    question_text: 'Why is standard K-Fold random cross-validation invalid for time series forecasting models?',
-    option_a: 'It inflates memory consumption in batch processing',
-    option_b: 'It introduces data leakage and lookahead bias by training on future time periods to predict past observations',
-    option_c: 'It cannot compute Root Mean Squared Error (RMSE)',
-    option_d: 'It forces target transformations to logarithmic scales',
+    category: 'Time Series Validation',
+    question_text: 'Why is standard randomized K-Fold cross validation invalid for evaluating time series forecasting models?',
+    option_a: 'It inflates RAM consumption during training',
+    option_b: 'It causes data leakage and lookahead bias by training on future observations to predict the past',
+    option_c: 'It cannot compute Mean Absolute Percentage Error (MAPE)',
+    option_d: 'It forces target values into negative ranges',
     correct_option: 'B',
-    explanation: 'Random shuffling shuffles future data into training folds, violating temporal causality (lookahead leakage). Rolling-window/expanding-window validation must be used.'
+    explanation: 'Shuffling violates temporal order, leaking future data into training folds.'
   },
 
   // ================= 7. THE FRANCHISE QB (Deep Learning) =================
+  // ROOKIE
   {
     difficulty: 'ROOKIE',
     topic_id: 'qb',
     category: 'Neural Networks',
-    question_text: 'Which non-linear activation function helps mitigate the vanishing gradient problem in deep neural networks compared to Sigmoid?',
+    question_text: 'Which activation function is most widely used in hidden layers of deep networks to avoid the vanishing gradient problem seen in Sigmoid?',
     option_a: 'ReLU (Rectified Linear Unit)',
     option_b: 'Tanh',
-    option_c: 'Softmax',
-    option_d: 'Linear Step',
+    option_c: 'Step Function',
+    option_d: 'Linear Identity',
     correct_option: 'A',
-    explanation: 'ReLU has a constant derivative of 1 for positive inputs, preventing exponential decay of backpropagated gradients.'
+    explanation: 'ReLU derivative is 1 for positive values, preventing vanishing gradients.'
   },
+  // PRO-BOWLER
   {
     difficulty: 'PRO-BOWLER',
     topic_id: 'qb',
-    category: 'Convolutional & Recurrent Architectures',
-    question_text: 'What is the purpose of Batch Normalization in deep neural networks during training?',
-    option_a: 'To reduce internal covariate shift by normalizing layer inputs to zero mean and unit variance across the mini-batch',
-    option_b: 'To convert fully connected layers into 1D convolutions',
-    option_c: 'To eliminate the need for loss backpropagation',
-    option_d: 'To dynamically alter the number of hidden neurons',
+    category: 'Deep Learning Architectures',
+    question_text: 'What is the primary role of Batch Normalization during deep neural network training?',
+    option_a: 'To normalize layer inputs to zero mean and unit variance across the mini-batch, stabilizing internal covariate shift and allowing higher learning rates',
+    option_b: 'To convert fully connected layers into convolutional filters',
+    option_c: 'To eliminate backpropagation pass steps',
+    option_d: 'To dynamically prune dead neurons',
     correct_option: 'A',
-    explanation: 'Batch Normalization stabilizes and accelerates training by normalizing activations across the mini-batch, allowing higher learning rates.'
+    explanation: 'Batch Normalization standardizes mini-batch layer inputs, accelerating convergence.'
   },
+  // HALL OF FAMER
   {
     difficulty: 'HALL OF FAMER',
     topic_id: 'qb',
-    category: 'Attention & Transformers',
-    question_text: 'In the Transformer Scaled Dot-Product Attention mechanism Softmax(QK^T / sqrt(d_k))V, why are query-key dot products scaled by 1/sqrt(d_k)?',
-    option_a: 'To prevent large values from pushing Softmax into regions with extremely small gradients',
-    option_b: 'To compress token representations into orthogonal subspaces',
-    option_c: 'To invert the positional encoding vectors',
-    option_d: 'To ensure quadratic memory reduction in multi-head blocks',
+    category: 'Transformers & Attention',
+    question_text: 'In Transformer Multi-Head Self-Attention Softmax(QK^T / sqrt(d_k))V, why are dot products scaled by 1/sqrt(d_k)?',
+    option_a: 'To prevent large values from driving the Softmax function into regions with near-zero gradients (vanishing gradients)',
+    option_b: 'To enforce orthogonal projections across attention heads',
+    option_c: 'To invert token positional encodings',
+    option_d: 'To eliminate quadratic O(N^2) sequence complexity',
     correct_option: 'A',
-    explanation: 'For large projection dimensions d_k, dot products grow large in magnitude, driving the softmax function into regions with tiny gradients (gradient vanishing).'
+    explanation: 'For large d_k, dot products grow large, pushing softmax into flat saturation zones with tiny gradients.'
   },
 
   // ================= 8. AUDIBLES & CALLING (NLP & Generative AI) =================
+  // ROOKIE
   {
     difficulty: 'ROOKIE',
     topic_id: 'dc',
     category: 'NLP Embeddings',
-    question_text: 'What is the primary advantage of contextual word embeddings (BERT) over static word embeddings (Word2Vec / GloVe)?',
-    option_a: 'BERT produces smaller vocabulary matrices',
-    option_b: 'BERT generates different vector representations for a word depending on its surrounding context in the sentence',
-    option_c: 'Word2Vec cannot run on GPU acceleration',
-    option_d: 'BERT does not require tokenizer vocabularies',
-    correct_option: 'B',
-    explanation: 'BERT computes dynamic contextual representations (e.g. "bank" of a river vs "bank" for money have different vectors).'
+    question_text: 'What is the primary advantage of contextual word embeddings (BERT) over static embeddings (Word2Vec / GloVe)?',
+    option_a: 'BERT generates different vector embeddings for the same word based on its sentence context',
+    option_b: 'BERT requires no vocabulary tokenization',
+    option_c: 'Word2Vec cannot run on CPU hardware',
+    option_d: 'BERT produces single-dimension integers instead of vectors',
+    correct_option: 'A',
+    explanation: 'Contextual embeddings assign different representations based on surrounding context.'
   },
+  // PRO-BOWLER
   {
     difficulty: 'PRO-BOWLER',
     topic_id: 'dc',
     category: 'RAG Architecture',
-    question_text: 'In a Retrieval-Augmented Generation (RAG) system, what is the primary role of a Vector Database (e.g. Pinecone, Chroma, pgvector)?',
-    option_a: 'To fine-tune transformer attention weights on custom corpora',
-    option_b: 'To index text chunk embeddings and perform fast Approximate Nearest Neighbor (ANN) semantic similarity search',
-    option_c: 'To format prompt responses into JSON schema',
-    option_d: 'To evaluate BLEU and ROUGE benchmark scores',
-    correct_option: 'B',
-    explanation: 'Vector databases store embedding vectors and retrieve the top-K semantically relevant document chunks given a user query embedding.'
+    question_text: 'In a Retrieval-Augmented Generation (RAG) system, what is the role of a Vector Database?',
+    option_a: 'To store chunk embeddings and retrieve semantically similar context chunks via Approximate Nearest Neighbor (ANN) search',
+    option_b: 'To fine-tune transformer model weights',
+    option_c: 'To convert output text into speech',
+    option_d: 'To calculate perplexity and BLEU scores',
+    correct_option: 'A',
+    explanation: 'Vector databases index high-dimensional embeddings for fast semantic similarity lookups.'
   },
+  // HALL OF FAMER
   {
     difficulty: 'HALL OF FAMER',
     topic_id: 'dc',
     category: 'LLM Fine-Tuning & Quantization',
-    question_text: 'What mathematical principle enables LoRA (Low-Rank Adaptation) to fine-tune large language models with a fraction of trainable parameters?',
-    option_a: 'Decomposing weight update matrices Delta_W into the product of two low-rank matrices B and A where rank r << min(d, k)',
-    option_b: 'Quantizing weights from float32 to int2 using stochastic rounding',
-    option_c: 'Pruning attention heads with low mutual information',
-    option_d: 'Replacing causal masking with bidirectional prefix encodings',
+    question_text: 'How does LoRA (Low-Rank Adaptation) fine-tune large language models efficiently without updating full model weights?',
+    option_a: 'By freezing base weights and injecting trainable low-rank decomposition matrices Delta_W = B * A with rank r << min(d, k)',
+    option_b: 'By quantizing all model parameters from 16-bit to 1-bit binary weights',
+    option_c: 'By deleting attention heads with lowest variance',
+    option_d: 'By replacing causal decoder masks with bidirectional encoders',
     correct_option: 'A',
-    explanation: 'LoRA freezes the pretrained weights W0 and represents the update Delta_W as B * A, where B (d x r) and A (r x k) have small rank r.'
+    explanation: 'LoRA freezes base weights and trains small low-rank adapter matrices B and A.'
   },
 
   // ================= 9. THE FRONT OFFICE (MLOps & System Architecture) =================
+  // ROOKIE
   {
     difficulty: 'ROOKIE',
     topic_id: 'gm',
     category: 'Model Monitoring',
-    question_text: 'What type of model degradation occurs when the statistical distribution of input features changes over time while the target relationship P(Y|X) remains unchanged?',
+    question_text: 'What type of drift occurs when the distribution of input features changes over time (P(X) shifts) while the relationship to targets P(Y|X) remains constant?',
     option_a: 'Concept Drift',
     option_b: 'Data Drift (Covariate Shift)',
-    option_c: 'Prior Probability Shift',
-    option_d: 'Target Leakage',
+    option_c: 'Target Leakage',
+    option_d: 'Prior Shift',
     correct_option: 'B',
-    explanation: 'Data Drift / Covariate Shift refers to changes in P(X), whereas Concept Drift refers to changes in the conditional distribution P(Y|X).'
+    explanation: 'Data Drift / Covariate Shift refers to shifts in input feature distributions P(X).'
   },
+  // PRO-BOWLER
   {
     difficulty: 'PRO-BOWLER',
     topic_id: 'gm',
     category: 'Deployment Strategies',
-    question_text: 'Which deployment strategy routes a small percentage of production traffic to a new model version while serving the majority with the baseline to evaluate live performance with minimal risk?',
-    option_a: 'Blue-Green Deployment',
-    option_b: 'Canary Deployment',
+    question_text: 'Which deployment strategy safely routes a small percentage (e.g. 5%) of production traffic to a new model to monitor real-world performance before full rollout?',
+    option_a: 'Canary Deployment',
+    option_b: 'Blue-Green Deployment',
     option_c: 'Shadow Deployment',
     option_d: 'Rolling Deployment',
-    correct_option: 'B',
-    explanation: 'Canary deployments route a small fraction of live traffic to the candidate model to monitor stability before full rollout.'
+    correct_option: 'A',
+    explanation: 'Canary deployments send a small slice of live traffic to evaluate the new version.'
   },
+  // HALL OF FAMER
   {
     difficulty: 'HALL OF FAMER',
     topic_id: 'gm',
-    category: 'Feature Stores & Low Latency Serving',
-    question_text: 'In enterprise MLOps architectures (e.g. Feast, Tecton), what is the primary architectural purpose of a dual-layer Feature Store (Online vs Offline)?',
-    option_a: 'Online store (Redis/DynamoDB) delivers millisecond latency features for real-time inference, while Offline store (Snowflake/BigQuery) provides point-in-time correct historical features for training without leakage',
-    option_b: 'To convert unstructured video streams into tabular CSV dumps',
-    option_c: 'To automatically generate model documentation and licenses',
-    option_d: 'To run distributed unit tests across GPU clusters',
+    category: 'Feature Stores & Architecture',
+    question_text: 'In enterprise MLOps architectures, what is the primary role of a dual-layer Feature Store (Online vs Offline)?',
+    option_a: 'Online store provides low-latency key-value feature lookups for real-time inference, while Offline store provides point-in-time historical joins for training without data leakage',
+    option_b: 'To convert unstructured video into tabular CSV tables',
+    option_c: 'To automatically generate API documentation and licenses',
+    option_d: 'To run unit tests across distributed clusters',
     correct_option: 'A',
-    explanation: 'Dual feature stores solve training-serving skew: low latency key-value reads in production and point-in-time historical joins for training.'
+    explanation: 'Dual feature stores prevent training-serving skew with low-latency reads in production and point-in-time joins in training.'
   }
 ];
 
 export const seedQuestions = async (): Promise<void> => {
-  // Setup tables if needed
-  await query(`
-    CREATE TABLE IF NOT EXISTS questions (
-      id VARCHAR(64) PRIMARY KEY,
-      difficulty VARCHAR(20) NOT NULL,
-      topic_id VARCHAR(20) NOT NULL DEFAULT 'all',
-      category VARCHAR(100) NOT NULL,
-      question_text TEXT NOT NULL,
-      option_a TEXT NOT NULL,
-      option_b TEXT NOT NULL,
-      option_c TEXT NOT NULL,
-      option_d TEXT NOT NULL,
-      correct_option CHAR(1) NOT NULL,
-      explanation TEXT,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
-
   await query('TRUNCATE TABLE questions CASCADE');
 
-  for (const q of COMPREHENSIVE_QUESTION_BANK) {
+  for (const q of COMPLETE_CURRICULUM_BANK) {
     const id = uuidv4();
     await query(
       `INSERT INTO questions (id, difficulty, topic_id, category, question_text, option_a, option_b, option_c, option_d, correct_option, explanation)
@@ -413,11 +500,11 @@ export const seedQuestions = async (): Promise<void> => {
 if (require.main === module) {
   seedQuestions()
     .then(() => {
-      console.log('Successfully seeded 9-topic curriculum question bank.');
+      console.log('Successfully seeded complete curriculum question bank.');
       process.exit(0);
     })
     .catch((err) => {
-      console.error('Failed to seed 9-topic curriculum:', err);
+      console.error('Failed to seed questions:', err);
       process.exit(1);
     });
 }

@@ -19,14 +19,15 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 /**
- * Start a test session based on chosen Target Position (Topic) and Prospect Level (Difficulty).
+ * Start a test session strictly respecting the chosen Target Position (Topic) and Prospect Level (Difficulty).
  */
 router.post('/start', requireAuth, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const topicIdParam = (req.body.topicId || 'all').toLowerCase();
+    const topicIdParam = (req.body.topicId || 'ol').toLowerCase();
     const difficultyParam = (req.body.difficulty || 'ROOKIE').toUpperCase();
     const count = Number(req.body.count || 30);
 
+    // 1. Strict Query matching both Topic and Difficulty
     let querySql = `
       SELECT id, difficulty, topic_id, category, question_text, option_a, option_b, option_c, option_d, correct_option 
       FROM questions 
@@ -48,14 +49,26 @@ router.post('/start', requireAuth, async (req: AuthRequest, res: Response): Prom
 
     let questionsRes = await query(querySql, params);
 
-    // If specific filter returned fewer than count, fallback to wider curriculum
-    if (questionsRes.rows.length < count) {
+    // 2. If pool has fewer than count, expand to same topic first (preserving topic preference)
+    if (questionsRes.rows.length < count && topicIdParam !== 'all') {
       questionsRes = await query(
         `SELECT id, difficulty, topic_id, category, question_text, option_a, option_b, option_c, option_d, correct_option 
          FROM questions 
-         ORDER BY RANDOM() 
-         LIMIT $1`,
-        [count]
+         WHERE topic_id = $1
+         ORDER BY (CASE WHEN difficulty = $2 THEN 0 ELSE 1 END), RANDOM() 
+         LIMIT $3`,
+        [topicIdParam, difficultyParam, count]
+      );
+    }
+
+    // 3. Fallback only if database has very few questions
+    if (questionsRes.rows.length === 0) {
+      questionsRes = await query(
+        `SELECT id, difficulty, topic_id, category, question_text, option_a, option_b, option_c, option_d, correct_option 
+         FROM questions 
+         ORDER BY (CASE WHEN difficulty = $1 THEN 0 ELSE 1 END), RANDOM() 
+         LIMIT $2`,
+        [difficultyParam, count]
       );
     }
 
