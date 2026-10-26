@@ -343,6 +343,32 @@ export function App() {
     }
   };
 
+  const handleGuestLogin = async () => {
+    setAuthLoading(true);
+    setAuthError('');
+
+    try {
+      const res = await fetch('/api/auth/guest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to start guest session');
+      }
+
+      setUser(data.user);
+      setToken(data.token);
+      localStorage.setItem('mcq_user', JSON.stringify(data.user));
+      localStorage.setItem('mcq_token', data.token);
+    } catch (err: any) {
+      setAuthError(err.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     setUser(null);
     setToken(null);
@@ -503,6 +529,25 @@ export function App() {
               {authLoading ? 'Verifying...' : authMode === 'register' ? 'Register & Enter Arena' : 'Sign In to Arena'}
             </button>
           </form>
+
+          <div className="relative my-6 text-center">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-800" />
+            </div>
+            <span className="relative px-3 bg-slate-950/80 text-xs uppercase tracking-wider text-slate-500 font-medium">
+              or instant access
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGuestLogin}
+            disabled={authLoading}
+            className="w-full py-3 px-4 rounded-xl font-semibold bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 hover:border-indigo-500/50 text-slate-200 hover:text-white transition shadow-sm flex items-center justify-center gap-2 group disabled:opacity-50"
+          >
+            <Zap className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+            <span>⚡ Continue as Guest (1-Click Test Login)</span>
+          </button>
         </div>
       </div>
     );

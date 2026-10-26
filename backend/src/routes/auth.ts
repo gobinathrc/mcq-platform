@@ -107,4 +107,37 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+/**
+ * Temporary Guest Login (Zero friction for rapid test access)
+ */
+router.post('/guest', async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const guestId = uuidv4();
+    const guestNumber = Math.floor(1000 + Math.random() * 9000);
+    const guestName = `Guest Candidate #${guestNumber}`;
+    const guestEmail = `guest_${guestNumber}_${Date.now()}@mcqtest.local`;
+    const tempPasswordHash = await bcrypt.hash(uuidv4(), 8);
+
+    await query(
+      'INSERT INTO users (id, name, email, password_hash) VALUES ($1, $2, $3, $4)',
+      [guestId, guestName, guestEmail, tempPasswordHash]
+    );
+
+    const token = jwt.sign(
+      { userId: guestId, email: guestEmail, name: guestName },
+      getJwtSecret(),
+      { expiresIn: '24h' }
+    );
+
+    res.status(201).json({
+      message: 'Guest login initialized',
+      token,
+      user: { id: guestId, name: guestName, email: guestEmail }
+    });
+  } catch (error: any) {
+    console.error('Guest login error:', error);
+    res.status(500).json({ error: 'Failed to initialize temporary guest session' });
+  }
+});
+
 export default router;

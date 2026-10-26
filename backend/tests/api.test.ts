@@ -84,6 +84,18 @@ describe('MCQ Platform End-to-End API Suite', () => {
 
       expect(res.status).toBe(401);
     });
+
+    it('should allow guest examinee login with instant credentials', async () => {
+      const res = await request(app)
+        .post('/api/auth/guest')
+        .send();
+
+      expect(res.status).toBe(201);
+      expect(res.body.token).toBeDefined();
+      expect(res.body.user).toBeDefined();
+      expect(res.body.user.name).toMatch(/^Guest Candidate/);
+      expect(res.body.user.email).toMatch(/@mcqtest\.local$/);
+    });
   });
 
   describe('2. Test Session & Scoring Flow', () => {
@@ -136,13 +148,10 @@ describe('MCQ Platform End-to-End API Suite', () => {
       expect(res.status).toBe(200);
       expect(res.body.score).toBeDefined();
       expect(typeof res.body.percentage).toBe('number');
-      expect(res.body.breakdown).toBeInstanceOf(Array);
-      expect(res.body.breakdown.length).toBe(questionsReceived.length);
-
-      // Verify the breakdown provides correct options and explanations
-      const firstResult = res.body.breakdown[0];
-      expect(firstResult.correctOption).toBeDefined();
-      expect(firstResult.explanation).toBeDefined();
+      expect(res.body.totalQuestions).toBe(questionsReceived.length);
+      expect(typeof res.body.passed).toBe('boolean');
+      // Verify anti-leak: breakdown with answer keys should NOT be exposed in exam submission response
+      expect(res.body.breakdown).toBeUndefined();
     });
 
     it('should prevent resubmitting the same completed session', async () => {
