@@ -15,7 +15,8 @@ export const runMigrations = async (): Promise<void> => {
 
     CREATE TABLE IF NOT EXISTS questions (
       id VARCHAR(64) PRIMARY KEY,
-      difficulty VARCHAR(20) NOT NULL, -- 'EASY', 'MEDIUM', 'HARD'
+      difficulty VARCHAR(20) NOT NULL, -- 'ROOKIE', 'PRO-BOWLER', 'HALL OF FAMER' (or EASY, MEDIUM, HARD)
+      topic_id VARCHAR(20) NOT NULL DEFAULT 'all',
       category VARCHAR(100) NOT NULL,
       question_text TEXT NOT NULL,
       option_a TEXT NOT NULL,
@@ -28,6 +29,7 @@ export const runMigrations = async (): Promise<void> => {
     );
 
     CREATE INDEX IF NOT EXISTS idx_questions_diff ON questions(difficulty);
+    CREATE INDEX IF NOT EXISTS idx_questions_topic ON questions(topic_id);
 
     CREATE TABLE IF NOT EXISTS test_sessions (
       id VARCHAR(64) PRIMARY KEY,

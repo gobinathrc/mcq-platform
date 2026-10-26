@@ -19,38 +19,48 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 /**
- * Start a mixed SQL test session.
- * 1. Pulls questions mixed across all topics (Easy, Medium, and Hard).
- * 2. Dynamically shuffles the 4 options for each question per examinee so option positions (A, B, C, D) are naturally randomized without bias.
- * 3. Keeps an in-session mapping in PostgreSQL or session storage to score correctly.
+ * Start a test session based on chosen Target Position (Topic) and Prospect Level (Difficulty).
  */
 router.post('/start', requireAuth, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const difficultyParam = (req.body.difficulty || 'MIXED').toUpperCase();
+    const topicIdParam = (req.body.topicId || 'all').toLowerCase();
+    const difficultyParam = (req.body.difficulty || 'ROOKIE').toUpperCase();
     const count = Number(req.body.count || 30);
 
-    // If candidate picked EASY, MEDIUM, or HARD, prioritize those, otherwise mix all SQL questions
-    let questionsRes;
-    if (difficultyParam === 'MIXED' || !['EASY', 'MEDIUM', 'HARD'].includes(difficultyParam)) {
+    let querySql = `
+      SELECT id, difficulty, topic_id, category, question_text, option_a, option_b, option_c, option_d, correct_option 
+      FROM questions 
+      WHERE 1=1
+    `;
+    const params: any[] = [];
+
+    if (topicIdParam !== 'all') {
+      params.push(topicIdParam);
+      querySql += ` AND topic_id = $${params.length}`;
+    }
+
+    if (['ROOKIE', 'PRO-BOWLER', 'HALL OF FAMER'].includes(difficultyParam)) {
+      params.push(difficultyParam);
+      querySql += ` AND difficulty = $${params.length}`;
+    }
+
+    querySql += ` ORDER BY RANDOM() LIMIT ${count}`;
+
+    let questionsRes = await query(querySql, params);
+
+    // If specific filter returned fewer than count, fallback to wider curriculum
+    if (questionsRes.rows.length < count) {
       questionsRes = await query(
-        `SELECT id, difficulty, category, question_text, option_a, option_b, option_c, option_d, correct_option 
+        `SELECT id, difficulty, topic_id, category, question_text, option_a, option_b, option_c, option_d, correct_option 
          FROM questions 
          ORDER BY RANDOM() 
          LIMIT $1`,
         [count]
       );
-    } else {
-      questionsRes = await query(
-        `SELECT id, difficulty, category, question_text, option_a, option_b, option_c, option_d, correct_option 
-         FROM questions 
-         ORDER BY (CASE WHEN difficulty = $1 THEN 0 ELSE 1 END), RANDOM() 
-         LIMIT $2`,
-        [difficultyParam, count]
-      );
     }
 
     if (questionsRes.rows.length === 0) {
-      res.status(404).json({ error: 'No questions available. Please run database seed.' });
+      res.status(404).json({ error: 'No questions available in question bank.' });
       return;
     }
 
@@ -106,6 +116,7 @@ router.post('/start', requireAuth, async (req: AuthRequest, res: Response): Prom
       questionsPayload.push({
         id: q.id,
         index: index + 1,
+        topic_id: q.topic_id,
         category: q.category,
         difficulty: q.difficulty,
         question_text: q.question_text,

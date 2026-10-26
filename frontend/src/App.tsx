@@ -1,16 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Award, 
-  BookOpen, 
-  ShieldCheck, 
-  ChevronRight, 
   RotateCcw, 
   LogOut, 
   Layers, 
   Clock,
   XCircle,
   HelpCircle,
-  CheckCircle2
+  CheckCircle2,
+  Shield,
+  Zap,
+  Flag,
+  Clipboard,
+  Lock,
+  Cpu,
+  Megaphone,
+  Building2,
+  LayoutGrid
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -28,8 +34,9 @@ interface QuestionOption {
 interface Question {
   id: string;
   index: number;
+  topic_id?: string;
   category: string;
-  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  difficulty: 'ROOKIE' | 'PRO-BOWLER' | 'HALL OF FAMER' | string;
   question_text: string;
   options: QuestionOption[];
 }
@@ -42,18 +49,34 @@ interface ExamResult {
   passed: boolean;
 }
 
-// Difficulty-based time per question:
-// Easy: 45 seconds
-// Medium: 60 seconds (1 minute)
-// Hard: 75 seconds (1 minute 15 seconds)
-const getTimeForQuestion = (diff?: 'EASY' | 'MEDIUM' | 'HARD'): number => {
-  if (diff === 'HARD') return 75;
-  if (diff === 'MEDIUM') return 60;
-  return 45; // EASY default
+// 9 Target Positions on the Board
+const TARGET_POSITIONS = [
+  { id: 'all', code: 'ALL', title: 'FULL COMBINE BOARD', subtitle: 'All 9 Topics Mixed', icon: LayoutGrid },
+  { id: 'ol', code: 'OL', title: 'THE OFFENSIVE LINE', subtitle: 'SQL & Data Engineering', icon: Shield },
+  { id: 'cb', code: 'CB', title: 'SCOUTING COMBINE', subtitle: 'Descriptive Stats & EDA', icon: Zap },
+  { id: 'hc', code: 'HC', title: "COACHES' CHALLENGE", subtitle: 'Inferential Stats & Hypotheses', icon: Flag },
+  { id: 'oc', code: 'OC', title: 'THE PLAYBOOK', subtitle: 'Supervised Machine Learning', icon: Clipboard },
+  { id: 'fs', code: 'FS', title: 'ZONE COVERAGE', subtitle: 'Unsupervised & Anomaly Detection', icon: Lock },
+  { id: 'st', code: 'ST', title: 'CLOCK MANAGEMENT', subtitle: 'Time Series & Forecasting', icon: Clock },
+  { id: 'qb', code: 'QB', title: 'THE FRANCHISE QB', subtitle: 'Deep Learning (DL)', icon: Cpu },
+  { id: 'dc', code: 'DC', title: 'AUDIBLES & CALLING', subtitle: 'NLP & Generative AI', icon: Megaphone },
+  { id: 'gm', code: 'GM', title: 'THE FRONT OFFICE', subtitle: 'MLOps & System Architecture', icon: Building2 },
+];
+
+// 3 Prospect Levels (Difficulty) with allocated time per question
+const PROSPECT_LEVELS = [
+  { id: 'ROOKIE', title: 'ROOKIE', subtitle: 'Foundations', seconds: 45 },
+  { id: 'PRO-BOWLER', title: 'PRO-BOWLER', subtitle: 'Production Depth', seconds: 60 },
+  { id: 'HALL OF FAMER', title: 'HALL OF FAMER', subtitle: 'Architectural Rigor', seconds: 75 },
+];
+
+const getTimeForDifficulty = (diff?: string): number => {
+  if (diff === 'HALL OF FAMER') return 75;
+  if (diff === 'PRO-BOWLER') return 60;
+  return 45; // Default ROOKIE
 };
 
 export function App() {
-  // Auth state
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('mcq_user');
     return saved ? JSON.parse(saved) : null;
@@ -66,8 +89,12 @@ export function App() {
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
 
-  // Exam lobby state
-  const [difficulty, setDifficulty] = useState<'EASY' | 'MEDIUM' | 'HARD'>('MEDIUM');
+  // Main Navigation Tabs: 'sql' for Primary SQL Assessment, 'combine' for 9-Topic Multi-Discipline Combine
+  const [activeTab, setActiveTab] = useState<'sql' | 'combine'>('sql');
+
+  // Board selections
+  const [selectedTopic, setSelectedTopic] = useState('ol');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<'ROOKIE' | 'PRO-BOWLER' | 'HALL OF FAMER'>('ROOKIE');
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [examStarted, setExamStarted] = useState(false);
 
@@ -76,17 +103,15 @@ export function App() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, 'A' | 'B' | 'C' | 'D'>>({});
-  
-  // Countdown timer per question based on difficulty
   const [secondsRemaining, setSecondsRemaining] = useState(45);
   const [submitting, setSubmitting] = useState(false);
 
-  // Anti-cheat proctoring: tab switch / window blur counter & modal
+  // Anti-cheat proctoring
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [warningMessage, setWarningMessage] = useState('');
 
-  // Result state (clean final score only, no answer leak)
+  // Result state
   const [result, setResult] = useState<ExamResult | null>(null);
 
   const selectedAnswersRef = useRef(selectedAnswers);
@@ -104,7 +129,6 @@ export function App() {
   const sessionIdRef = useRef(sessionId);
   sessionIdRef.current = sessionId;
 
-  // Submit exam and receive final score (no question/answer breakdown returned)
   const handleSubmitExam = async () => {
     const activeToken = tokenRef.current;
     const activeSessionId = sessionIdRef.current;
@@ -147,8 +171,8 @@ export function App() {
 
       if (data.percentage >= 60) {
         confetti({
-          particleCount: 80,
-          spread: 70,
+          particleCount: 90,
+          spread: 75,
           origin: { y: 0.6 }
         });
       }
@@ -159,19 +183,18 @@ export function App() {
     }
   };
 
-  // Move to next question or auto-submit when on last question
   const handleNextQuestion = () => {
     if (currentIdxRef.current < questionsRef.current.length - 1) {
       const nextIdx = currentIdxRef.current + 1;
       const nextQ = questionsRef.current[nextIdx];
       setCurrentIdx(nextIdx);
-      setSecondsRemaining(getTimeForQuestion(nextQ?.difficulty));
+      setSecondsRemaining(getTimeForDifficulty(nextQ?.difficulty));
     } else {
       handleSubmitExam();
     }
   };
 
-  // Anti-Cheat: Detect Tab switching, Window blur, and Fullscreen exit
+  // Anti-Cheat: Detect Tab switching, Window blur, and Lock Selection
   useEffect(() => {
     if (!examStarted || result) return;
 
@@ -186,7 +209,7 @@ export function App() {
               handleSubmitExam();
             }, 2000);
           } else {
-            setWarningMessage(`⚠️ Warning ${newCount}/3: Leaving the exam tab is prohibited! Further attempts will auto-submit your test.`);
+            setWarningMessage(`⚠️ Warning ${newCount}/3: Leaving the exam tab is prohibited! Further attempts will auto-submit.`);
             setShowWarningModal(true);
           }
           return newCount;
@@ -195,7 +218,6 @@ export function App() {
     };
 
     const handleWindowBlur = () => {
-      // Catch switching to secondary monitor or opening split windows
       setTabSwitchCount((prev) => {
         const newCount = prev + 1;
         if (newCount >= 3) {
@@ -205,20 +227,18 @@ export function App() {
             handleSubmitExam();
           }, 2000);
         } else {
-          setWarningMessage(`⚠️ Warning ${newCount}/3: Window lost focus! Please stay inside the assessment window.`);
+          setWarningMessage(`⚠️ Warning ${newCount}/3: Window focus lost! Please stay inside the assessment window.`);
           setShowWarningModal(true);
         }
         return newCount;
       });
     };
 
-    // Block right-click context menu (inspect / search)
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
       return false;
     };
 
-    // Block text selection & drag-and-drop actions completely
     const handleSelectStart = (e: Event) => {
       e.preventDefault();
       return false;
@@ -234,7 +254,6 @@ export function App() {
       return false;
     };
 
-    // Block keyboard shortcuts like Ctrl+C, Ctrl+V, Ctrl+T, Ctrl+W, F12
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
         (e.ctrlKey || e.metaKey) &&
@@ -270,12 +289,12 @@ export function App() {
     };
   }, [examStarted, result]);
 
-  // Timer for each question based on difficulty
+  // Timer per question based on difficulty
   useEffect(() => {
     if (!examStarted || result || questions.length === 0) return;
 
     const currentQ = questions[currentIdx];
-    const initialDuration = getTimeForQuestion(currentQ?.difficulty);
+    const initialDuration = getTimeForDifficulty(currentQ?.difficulty);
     setSecondsRemaining(initialDuration);
 
     const timer = setInterval(() => {
@@ -291,7 +310,6 @@ export function App() {
     return () => clearInterval(timer);
   }, [examStarted, currentIdx, result, questions]);
 
-  // Auth handler
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
@@ -334,19 +352,23 @@ export function App() {
     localStorage.removeItem('mcq_token');
   };
 
-  // Start test session with selected difficulty
   const handleStartExam = async () => {
     if (!token) return;
     setLoadingQuestions(true);
 
     try {
+      const topicToFetch = activeTab === 'sql' ? 'ol' : selectedTopic;
       const res = await fetch('/api/test/start', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ difficulty, count: 30 }),
+        body: JSON.stringify({ 
+          topicId: topicToFetch,
+          difficulty: selectedDifficulty, 
+          count: 30 
+        }),
       });
 
       const data = await res.json();
@@ -363,13 +385,12 @@ export function App() {
       setQuestions(data.questions);
       setSelectedAnswers({});
       setCurrentIdx(0);
-      setSecondsRemaining(getTimeForQuestion(data.questions[0]?.difficulty));
+      setSecondsRemaining(getTimeForDifficulty(data.questions[0]?.difficulty));
       setTabSwitchCount(0);
       setShowWarningModal(false);
       setExamStarted(true);
       setResult(null);
 
-      // Request browser fullscreen mode for proctored experience
       try {
         if (document.documentElement.requestFullscreen) {
           document.documentElement.requestFullscreen().catch(() => {});
@@ -394,13 +415,13 @@ export function App() {
   if (!user || !token) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/30 via-slate-950 to-slate-950">
-        <div className="w-full max-w-md glass-panel p-8 rounded-2xl border border-indigo-500/20 shadow-2xl">
+        <div className="w-full max-w-md glass-panel p-8 rounded-3xl border border-indigo-500/20 shadow-2xl">
           <div className="text-center mb-8">
-            <div className="inline-flex p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 mb-3 shadow-inner">
-              <BookOpen className="w-8 h-8" />
+            <div className="inline-flex p-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 mb-3 shadow-inner">
+              <Shield className="w-8 h-8" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-white">Assessment MCQ Arena</h1>
-            <p className="text-slate-400 text-sm mt-1">Cross-platform test portal (Mac, Windows, iOS, Android)</p>
+            <h1 className="text-2xl font-bold tracking-tight text-white">Interview Assessment Arena</h1>
+            <p className="text-slate-400 text-sm mt-1">9-Topic Machine Learning & Data Engineering Combine</p>
           </div>
 
           <div className="flex bg-slate-900/80 p-1 rounded-xl mb-6 border border-slate-800">
@@ -479,7 +500,7 @@ export function App() {
               disabled={authLoading}
               className="w-full mt-2 py-3 px-4 rounded-xl font-medium bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 transition disabled:opacity-50"
             >
-              {authLoading ? 'Verifying...' : authMode === 'register' ? 'Register & Enter Exam' : 'Sign In to Exam'}
+              {authLoading ? 'Verifying...' : authMode === 'register' ? 'Register & Enter Arena' : 'Sign In to Arena'}
             </button>
           </form>
         </div>
@@ -487,46 +508,44 @@ export function App() {
     );
   }
 
-  // 2. Instant Results & Scorecard View (Secure: Shows ONLY final score & percentage, NO answers leaked)
+  // 2. Scorecard View
   if (result) {
     return (
       <div className="min-h-screen p-4 sm:p-8 bg-slate-950 max-w-3xl mx-auto flex flex-col justify-center">
-        {/* Header */}
         <div className="text-center mb-8">
           <span className="text-xs uppercase tracking-widest text-indigo-400 font-bold">Assessment Completed</span>
-          <h1 className="text-3xl font-extrabold text-white mt-1">Test Submitted Successfully</h1>
-          <p className="text-slate-400 text-sm mt-1">Your responses have been securely logged in the assessment database.</p>
+          <h1 className="text-3xl font-extrabold text-white mt-1">Combine Results Logged</h1>
+          <p className="text-slate-400 text-sm mt-1">Evaluated across your chosen target positions.</p>
         </div>
 
-        {/* Scorecard Hero */}
         <div className="glass-panel p-8 sm:p-10 rounded-3xl mb-8 relative overflow-hidden border border-indigo-500/20 shadow-2xl">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
             <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Your Final Score</span>
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Final Score</span>
               <div className="text-4xl font-extrabold text-white mt-2">
                 {result.score} <span className="text-slate-500 text-xl font-normal">/ {result.totalQuestions}</span>
               </div>
             </div>
 
             <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col justify-center">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Percentage</span>
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Accuracy</span>
               <div className="text-4xl font-extrabold text-indigo-400 mt-2">
                 {result.percentage}%
               </div>
             </div>
 
             <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col justify-center">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Result Status</span>
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Status</span>
               <div className={`text-2xl font-extrabold mt-2 flex items-center justify-center gap-1.5 ${
                 result.passed ? 'text-emerald-400' : 'text-amber-400'
               }`}>
                 {result.passed ? (
                   <>
-                    <Award className="w-6 h-6 shrink-0" /> PASSED
+                    <Award className="w-6 h-6 shrink-0" /> DRAFTED
                   </>
                 ) : (
                   <>
-                    <HelpCircle className="w-6 h-6 shrink-0" /> COMPLETED
+                    <HelpCircle className="w-6 h-6 shrink-0" /> EVALUATED
                   </>
                 )}
               </div>
@@ -535,7 +554,7 @@ export function App() {
 
           <div className="mt-8 p-4 rounded-2xl bg-slate-900/40 border border-slate-800 text-center text-xs text-slate-400">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 inline mr-1" />
-            Evaluation finalized immediately. To maintain assessment confidentiality, correct and incorrect individual choices are not revealed.
+            Evaluation finalized immediately. Assessment answer keys remain strictly confidential.
           </div>
         </div>
 
@@ -544,14 +563,14 @@ export function App() {
             onClick={() => { setResult(null); setExamStarted(false); }}
             className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/25 transition"
           >
-            <RotateCcw className="w-4 h-4" /> Return to Lobby
+            <RotateCcw className="w-4 h-4" /> Return to Board
           </button>
         </div>
       </div>
     );
   }
 
-  // 3. Active Test Taking Interface (Full Screen Proctored View)
+  // 3. Active Test Taking Interface
   if (examStarted && questions.length > 0) {
     const currentQ = questions[currentIdx];
     const selected = selectedAnswers[currentQ.id];
@@ -560,7 +579,6 @@ export function App() {
 
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col w-full select-none">
-        {/* Anti-Cheat Tab Switch Warning Modal */}
         {showWarningModal && (
           <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
             <div className="glass-panel p-8 rounded-3xl border border-rose-500/50 max-w-lg w-full text-center shadow-2xl">
@@ -568,12 +586,7 @@ export function App() {
                 <XCircle className="w-10 h-10" />
               </div>
               <h2 className="text-xl font-bold text-white mb-2">Proctoring Security Alert</h2>
-              <p className="text-rose-300 text-sm mb-6 leading-relaxed">
-                {warningMessage}
-              </p>
-              <div className="p-3 bg-slate-900/80 rounded-xl text-xs text-slate-400 mb-6 border border-slate-800">
-                Switching tabs, copying question text, or using outside windows is tracked. Test auto-submits on 3rd violation.
-              </div>
+              <p className="text-rose-300 text-sm mb-6 leading-relaxed">{warningMessage}</p>
               <button
                 onClick={() => setShowWarningModal(false)}
                 className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition"
@@ -584,7 +597,6 @@ export function App() {
           </div>
         )}
 
-        {/* Top Header bar with Per-Question Dynamic Timer */}
         <header className="glass-panel sticky top-0 z-30 px-6 py-4 flex items-center justify-between border-b border-slate-800 w-full">
           <div className="flex items-center gap-3">
             <span className="px-3 py-1 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-bold tracking-wider">
@@ -601,7 +613,6 @@ export function App() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Dynamic Countdown Display based on question difficulty */}
             <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-mono text-base font-bold border ${
               secondsRemaining <= 10 
                 ? 'bg-rose-500/15 text-rose-400 border-rose-500/40 animate-pulse' 
@@ -621,22 +632,18 @@ export function App() {
           </div>
         </header>
 
-        {/* Question Progress Bar (visual decrease relative to question difficulty allocated time) */}
         <div className="w-full bg-slate-900 h-2 overflow-hidden">
           <div 
             className={`h-full transition-all duration-1000 ${
               secondsRemaining <= 10 ? 'bg-rose-500' : 'bg-indigo-500'
             }`}
-            style={{ width: `${(secondsRemaining / getTimeForQuestion(currentQ.difficulty)) * 100}%` }}
+            style={{ width: `${(secondsRemaining / getTimeForDifficulty(currentQ.difficulty)) * 100}%` }}
           />
         </div>
 
-        {/* Main Content Area - Expands fully to device screen */}
         <div className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-8 flex flex-col lg:flex-row gap-6">
-          {/* Question Card - Expands wide for readability on all displays */}
           <div className="flex-1 flex flex-col justify-between glass-panel p-6 sm:p-10 rounded-3xl border border-slate-800 shadow-2xl">
             <div>
-              {/* Question metadata */}
               <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-800">
                 <span className="text-xs uppercase tracking-widest text-indigo-400 font-bold">
                   Question {currentIdx + 1} of {questions.length} • {currentQ.category}
@@ -646,12 +653,10 @@ export function App() {
                 </span>
               </div>
 
-              {/* Question Statement - Large, crisp typography */}
               <h2 className="text-2xl sm:text-3xl font-semibold text-white leading-relaxed mb-8">
                 {currentQ.question_text}
               </h2>
 
-              {/* 4 Options Grid - Spacious interactive buttons */}
               <div className="space-y-4">
                 {currentQ.options.map((opt) => {
                   const isChecked = selected === opt.key;
@@ -677,18 +682,16 @@ export function App() {
               </div>
             </div>
 
-            {/* Advance Button */}
             <div className="flex items-center justify-end mt-10 pt-6 border-t border-slate-800">
               <button
                 onClick={handleNextQuestion}
                 className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-base font-semibold shadow-lg shadow-indigo-600/20 transition"
               >
-                {isLastQuestion ? 'Submit Exam' : 'Next Question'} <ChevronRight className="w-5 h-5" />
+                {isLastQuestion ? 'Submit Exam' : 'Next Question'}
               </button>
             </div>
           </div>
 
-          {/* Question Grid Navigator on the Side */}
           <div className="w-full lg:w-80 glass-panel p-6 rounded-3xl border border-slate-800 h-fit">
             <h3 className="text-xs uppercase tracking-wider font-bold text-slate-400 mb-4 flex items-center gap-2">
               <Layers className="w-4 h-4 text-indigo-400" /> Exam Progress
@@ -715,31 +718,24 @@ export function App() {
                 );
               })}
             </div>
-
-            <div className="mt-8 pt-4 border-t border-slate-800 space-y-2 text-xs text-slate-400">
-              <div className="flex items-center gap-2">
-                <span className="w-3.5 h-3.5 rounded bg-emerald-600/50 border border-emerald-500/60 inline-block" />
-                <span>Answered</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3.5 h-3.5 rounded bg-slate-900 border border-slate-800 inline-block" />
-                <span>Upcoming</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  // 4. Test Lobby: Select Difficulty (Easy / Medium / Hard)
+  // 4. Lobby: 9 Target Positions on the Board + 3 Prospect Levels
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-between">
-      {/* Top Navigation */}
       <header className="glass-panel px-6 py-4 flex items-center justify-between border-b border-slate-800">
-        <div className="flex items-center gap-2">
-          <BookOpen className="w-6 h-6 text-indigo-400" />
-          <span className="font-bold text-lg text-white">Assessment Arena</span>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            <Shield className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="font-bold text-lg text-white">Interview Assessment Arena</h1>
+            <p className="text-xs text-slate-400">Target Position Combine Board</p>
+          </div>
         </div>
 
         <div className="flex items-center gap-4">
@@ -749,7 +745,7 @@ export function App() {
           </div>
           <button
             onClick={handleLogout}
-            className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition"
+            className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition"
             title="Sign out"
           >
             <LogOut className="w-4 h-4" />
@@ -757,100 +753,153 @@ export function App() {
         </div>
       </header>
 
-      {/* Main Lobby Container */}
-      <main className="max-w-4xl mx-auto px-4 py-12 w-full">
-        <div className="text-center mb-10">
-          <span className="px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
-            Difficulty-Based Timers: Easy (45s) • Medium (60s) • Hard (75s)
-          </span>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white mt-3 tracking-tight">
-            Select Assessment Difficulty
-          </h1>
-          <p className="text-slate-400 max-w-lg mx-auto text-sm sm:text-base mt-2">
-            Each question time is tailored to its complexity: <strong>45s</strong> for Easy, <strong>1 minute (60s)</strong> for Medium, and <strong>1 minute 15s (75s)</strong> for Hard.
-          </p>
+      <main className="max-w-6xl mx-auto px-4 py-8 w-full">
+        {/* Navigation Tabs: SQL Primary vs 9-Topic Combine */}
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <button
+            onClick={() => setActiveTab('sql')}
+            className={`flex items-center gap-2.5 px-6 py-3 rounded-2xl font-bold text-sm transition-all border ${
+              activeTab === 'sql'
+                ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/25 ring-2 ring-indigo-400/30'
+                : 'glass-card border-slate-800 text-slate-400 hover:text-white'
+            }`}
+          >
+            <Shield className="w-4 h-4" />
+            <span>PRIMARY SQL ASSESSMENT</span>
+            <span className="px-2 py-0.5 rounded-md text-[10px] bg-indigo-950 text-indigo-300 font-mono border border-indigo-500/30">MAIN</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('combine')}
+            className={`flex items-center gap-2.5 px-6 py-3 rounded-2xl font-bold text-sm transition-all border ${
+              activeTab === 'combine'
+                ? 'bg-cyan-600 border-cyan-500 text-white shadow-lg shadow-cyan-600/25 ring-2 ring-cyan-400/30'
+                : 'glass-card border-slate-800 text-slate-400 hover:text-white'
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+            <span>9-TOPIC COMBINE BOARD</span>
+            <span className="px-2 py-0.5 rounded-md text-[10px] bg-cyan-950 text-cyan-300 font-mono border border-cyan-500/30">9 IN 1</span>
+          </button>
         </div>
 
-        {/* 3 Difficulty Option Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          {/* EASY */}
-          <div
-            onClick={() => setDifficulty('EASY')}
-            className={`cursor-pointer p-6 rounded-2xl border transition-all ${
-              difficulty === 'EASY'
-                ? 'glass-panel border-emerald-500 shadow-xl shadow-emerald-500/10 ring-2 ring-emerald-500/30'
-                : 'glass-card border-slate-800 hover:border-slate-700'
-            }`}
-          >
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold mb-4">
-              1
+        {/* Tab 1: PRIMARY SQL ASSESSMENT VIEW */}
+        {activeTab === 'sql' && (
+          <div className="glass-panel p-8 rounded-3xl border border-indigo-500/20 mb-8 text-center max-w-3xl mx-auto">
+            <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 flex items-center justify-center mx-auto mb-4 shadow-inner">
+              <Shield className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-1">Easy Level</h3>
-            <p className="text-xs text-slate-400 leading-relaxed mb-4">
-              SQL filtering (WHERE vs HAVING), DISTINCT queries, basic JOINS, pattern wildcards, and COUNT aggregations.
+            <h2 className="text-2xl font-extrabold text-white tracking-tight mb-2">
+              SQL & Data Engineering Assessment
+            </h2>
+            <p className="text-slate-400 text-sm max-w-lg mx-auto leading-relaxed mb-6">
+              Official interview test covering SQL queries, filtering (`WHERE` vs `HAVING`), multi-table joins, subqueries, aggregations, window functions, and data transformations.
             </p>
-            <div className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
-              <ShieldCheck className="w-4 h-4" /> 45s per question
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-indigo-300 font-medium">
+              <span>🎯 30 Questions Randomized</span>
+              <span>•</span>
+              <span>⚡ Timed per difficulty</span>
+              <span>•</span>
+              <span>🔒 Anti-Cheat Enabled</span>
             </div>
           </div>
+        )}
 
-          {/* MEDIUM */}
-          <div
-            onClick={() => setDifficulty('MEDIUM')}
-            className={`cursor-pointer p-6 rounded-2xl border transition-all ${
-              difficulty === 'MEDIUM'
-                ? 'glass-panel border-indigo-500 shadow-xl shadow-indigo-500/10 ring-2 ring-indigo-500/30'
-                : 'glass-card border-slate-800 hover:border-slate-700'
-            }`}
-          >
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 flex items-center justify-center font-bold mb-4">
-              2
-            </div>
-            <h3 className="text-xl font-bold text-white mb-1">Medium Level</h3>
-            <p className="text-xs text-slate-400 leading-relaxed mb-4">
-              Window functions (DENSE_RANK, LAG, LEAD), correlated subqueries, 3VL NULL logic, and CTEs.
-            </p>
-            <div className="text-xs text-indigo-400 font-semibold flex items-center gap-1">
-              <ShieldCheck className="w-4 h-4" /> 45s per question
+        {/* Tab 2: 9-TOPIC TARGET POSITION ON THE BOARD */}
+        {activeTab === 'combine' && (
+          <div className="mb-8">
+            <h2 className="text-xs uppercase tracking-widest text-slate-400 font-bold mb-4 flex items-center gap-2">
+              SELECT TARGET POSITION ON THE BOARD
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {TARGET_POSITIONS.map((pos) => {
+                const isSelected = selectedTopic === pos.id;
+                const IconComp = pos.icon;
+
+                return (
+                  <div
+                    key={pos.id}
+                    onClick={() => setSelectedTopic(pos.id)}
+                    className={`cursor-pointer p-5 rounded-2xl border transition-all relative ${
+                      isSelected
+                        ? 'bg-slate-900/90 border-cyan-400/80 shadow-lg shadow-cyan-500/10 ring-2 ring-cyan-400/30'
+                        : 'glass-card border-slate-800 hover:border-slate-700 bg-slate-900/40'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className={`p-2.5 rounded-xl border ${
+                        isSelected 
+                          ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400' 
+                          : 'bg-slate-800/80 border-slate-700/80 text-slate-400'
+                      }`}>
+                        <IconComp className="w-5 h-5" />
+                      </div>
+                      <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300">
+                        {pos.code}
+                      </span>
+                    </div>
+
+                    <h3 className={`text-base font-bold tracking-tight mb-1 ${
+                      isSelected ? 'text-amber-400' : 'text-slate-100'
+                    }`}>
+                      {pos.title}
+                    </h3>
+                    <p className="text-xs text-slate-400 font-medium">
+                      {pos.subtitle}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           </div>
+        )}
 
-          {/* HARD */}
-          <div
-            onClick={() => setDifficulty('HARD')}
-            className={`cursor-pointer p-6 rounded-2xl border transition-all ${
-              difficulty === 'HARD'
-                ? 'glass-panel border-rose-500 shadow-xl shadow-rose-500/10 ring-2 ring-rose-500/30'
-                : 'glass-card border-slate-800 hover:border-slate-700'
-            }`}
-          >
-            <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center font-bold mb-4">
-              3
-            </div>
-            <h3 className="text-xl font-bold text-white mb-1">Hard Level</h3>
-            <p className="text-xs text-slate-400 leading-relaxed mb-4">
-              Serializable Snapshot Isolation (SSI), covering indexes, MVCC VACUUM dead tuples, and WAL.
-            </p>
-            <div className="text-xs text-rose-400 font-semibold flex items-center gap-1">
-              <ShieldCheck className="w-4 h-4" /> 45s per question
-            </div>
+        {/* Section 2: PROSPECT LEVEL (DIFFICULTY) */}
+        <div className="mb-10">
+          <h2 className="text-xs uppercase tracking-widest text-slate-400 font-bold mb-4">
+            PROSPECT LEVEL (DIFFICULTY)
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {PROSPECT_LEVELS.map((level) => {
+              const isSelected = selectedDifficulty === level.id;
+              return (
+                <div
+                  key={level.id}
+                  onClick={() => setSelectedDifficulty(level.id as any)}
+                  className={`cursor-pointer p-4 rounded-2xl border text-center transition-all ${
+                    isSelected
+                      ? 'bg-emerald-950/40 border-emerald-500 ring-2 ring-emerald-500/30 text-emerald-400 shadow-lg shadow-emerald-500/10'
+                      : 'glass-card border-slate-800 text-slate-400 hover:border-slate-700'
+                  }`}
+                >
+                  <div className={`text-sm font-bold tracking-wider ${isSelected ? 'text-emerald-400' : 'text-slate-200'}`}>
+                    {level.title}
+                  </div>
+                  <div className="text-xs text-slate-400 mt-0.5">
+                    {level.subtitle} • {level.seconds}s/Q
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Start Assessment Action */}
+        {/* Launch Button */}
         <div className="text-center">
           <button
             onClick={handleStartExam}
             disabled={loadingQuestions}
-            className="px-8 py-4 rounded-xl font-bold text-white text-base bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-xl shadow-indigo-500/25 transition disabled:opacity-50"
+            className="px-10 py-4 rounded-2xl font-bold text-white text-base bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-xl shadow-indigo-500/25 transition disabled:opacity-50"
           >
-            {loadingQuestions ? 'Preparing Environment...' : `Start ${difficulty} Assessment (45s Per Question)`}
+            {loadingQuestions ? 'Preparing Position Combine...' : 'Start Assessment Combine'}
           </button>
         </div>
       </main>
 
       <footer className="text-center py-6 text-xs text-slate-500 border-t border-slate-800">
-        Assessment Engine • Cross-Platform Universal Web Client
+        Assessment Arena • 9-Topic Target Position Engine
       </footer>
     </div>
   );
