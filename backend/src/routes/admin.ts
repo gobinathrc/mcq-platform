@@ -12,7 +12,13 @@ router.post('/generate-sets', async (req: Request, res: Response): Promise<void>
   try {
     const { topic = 'SQL', sets = 5, questionsPerSet = 30 } = req.body;
 
-    const difficulties: ('EASY' | 'MEDIUM' | 'HARD')[] = ['EASY', 'MEDIUM', 'HARD', 'MEDIUM', 'HARD'];
+    const difficulties: ('ROOKIE' | 'PRO-BOWLER' | 'HALL OF FAMER')[] = [
+      'ROOKIE',
+      'PRO-BOWLER',
+      'HALL OF FAMER',
+      'ROOKIE',
+      'PRO-BOWLER'
+    ];
     const results: any[] = [];
     let totalGenerated = 0;
 
