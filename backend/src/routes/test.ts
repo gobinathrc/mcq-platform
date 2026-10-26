@@ -61,19 +61,8 @@ router.post('/start', requireAuth, async (req: AuthRequest, res: Response): Prom
       );
     }
 
-    // 3. Fallback only if database has very few questions
     if (questionsRes.rows.length === 0) {
-      questionsRes = await query(
-        `SELECT id, difficulty, topic_id, category, question_text, option_a, option_b, option_c, option_d, correct_option 
-         FROM questions 
-         ORDER BY (CASE WHEN difficulty = $1 THEN 0 ELSE 1 END), RANDOM() 
-         LIMIT $2`,
-        [difficultyParam, count]
-      );
-    }
-
-    if (questionsRes.rows.length === 0) {
-      res.status(404).json({ error: 'No questions available in question bank.' });
+      res.status(404).json({ error: 'No questions available in question bank for this topic.' });
       return;
     }
 

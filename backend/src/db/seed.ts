@@ -14,21 +14,8 @@ export interface SeedQuestion {
   explanation: string;
 }
 
-export const COMPLETE_CURRICULUM_BANK: SeedQuestion[] = [
-  // ================= 1. THE OFFENSIVE LINE (SQL & Data Engineering) =================
-  // ROOKIE (Beginner SQL)
-  {
-    difficulty: 'ROOKIE',
-    topic_id: 'ol',
-    category: 'SQL Filtering',
-    question_text: 'In SQL, which clause is used to filter records before any GROUP BY operations take place?',
-    option_a: 'ORDER BY',
-    option_b: 'WHERE',
-    option_c: 'HAVING',
-    option_d: 'LIMIT',
-    correct_option: 'B',
-    explanation: 'WHERE filters rows before groupings are formed.'
-  },
+export const DEDICATED_SQL_BANK: SeedQuestion[] = [
+  // ==================== ROOKIE LEVEL (Pure Beginner SQL: 12 Questions) ====================
   {
     difficulty: 'ROOKIE',
     topic_id: 'ol',
@@ -37,456 +24,440 @@ export const COMPLETE_CURRICULUM_BANK: SeedQuestion[] = [
     option_a: 'SELECT',
     option_b: 'GET',
     option_c: 'EXTRACT',
-    option_d: 'PULL',
+    option_d: 'OPEN',
     correct_option: 'A',
-    explanation: 'SELECT is used to query data from database tables.'
+    explanation: 'SELECT is used to query data from tables.'
+  },
+  {
+    difficulty: 'ROOKIE',
+    topic_id: 'ol',
+    category: 'SQL Filtering',
+    question_text: 'Which SQL clause is used to filter rows based on a specific condition before grouping?',
+    option_a: 'ORDER BY',
+    option_b: 'WHERE',
+    option_c: 'GROUP BY',
+    option_d: 'LIMIT',
+    correct_option: 'B',
+    explanation: 'WHERE filters rows individually before aggregation.'
+  },
+  {
+    difficulty: 'ROOKIE',
+    topic_id: 'ol',
+    category: 'SQL Queries',
+    question_text: 'Which keyword eliminates duplicate rows from the result set of a SELECT query?',
+    option_a: 'UNIQUE',
+    option_b: 'DIFFERENT',
+    option_c: 'DISTINCT',
+    option_d: 'SINGLE',
+    correct_option: 'C',
+    explanation: 'DISTINCT returns only unique rows.'
+  },
+  {
+    difficulty: 'ROOKIE',
+    topic_id: 'ol',
+    category: 'SQL Sorting',
+    question_text: 'Which keyword is used to sort query results in ascending order (A-Z, 0-9)?',
+    option_a: 'UP',
+    option_b: 'ORDER',
+    option_c: 'TOP',
+    option_d: 'ASC',
+    correct_option: 'D',
+    explanation: 'ASC sorts records in ascending order.'
+  },
+  {
+    difficulty: 'ROOKIE',
+    topic_id: 'ol',
+    category: 'SQL Sorting',
+    question_text: 'Which keyword is used to sort query results in descending order (highest to lowest)?',
+    option_a: 'DESC',
+    option_b: 'DOWN',
+    option_c: 'HIGH',
+    option_d: 'REVERSE',
+    correct_option: 'A',
+    explanation: 'DESC sorts records in descending order.'
+  },
+  {
+    difficulty: 'ROOKIE',
+    topic_id: 'ol',
+    category: 'SQL Insertion',
+    question_text: 'Which SQL statement is used to add new rows of data into a database table?',
+    option_a: 'ADD INTO',
+    option_b: 'INSERT INTO',
+    option_c: 'UPDATE INTO',
+    option_d: 'CREATE ROW',
+    correct_option: 'B',
+    explanation: 'INSERT INTO adds new records into a table.'
+  },
+  {
+    difficulty: 'ROOKIE',
+    topic_id: 'ol',
+    category: 'SQL Updates',
+    question_text: 'Which SQL statement modifies existing column values in a table?',
+    option_a: 'CHANGE',
+    option_b: 'MODIFY',
+    option_c: 'UPDATE',
+    option_d: 'SET',
+    correct_option: 'C',
+    explanation: 'UPDATE modifies existing records in a table.'
+  },
+  {
+    difficulty: 'ROOKIE',
+    topic_id: 'ol',
+    category: 'SQL Deletion',
+    question_text: 'Which statement removes rows from a table while keeping the table structure intact?',
+    option_a: 'REMOVE FROM',
+    option_b: 'DISCARD FROM',
+    option_c: 'DROP FROM',
+    option_d: 'DELETE FROM',
+    correct_option: 'D',
+    explanation: 'DELETE FROM deletes rows matching the WHERE filter.'
   },
   {
     difficulty: 'ROOKIE',
     topic_id: 'ol',
     category: 'SQL Aggregates',
     question_text: 'Which aggregate function counts only rows where the specified column is NOT NULL?',
-    option_a: 'COUNT(*)',
-    option_b: 'TOTAL()',
-    option_c: 'COUNT(column_name)',
-    option_d: 'SUM()',
-    correct_option: 'C',
-    explanation: 'COUNT(column_name) ignores NULL rows in that column.'
+    option_a: 'COUNT(column_name)',
+    option_b: 'COUNT(*)',
+    option_c: 'TOTAL(column_name)',
+    option_d: 'SUM(column_name)',
+    correct_option: 'A',
+    explanation: 'COUNT(col) ignores NULL entries, whereas COUNT(*) counts all rows.'
   },
   {
     difficulty: 'ROOKIE',
     topic_id: 'ol',
-    category: 'SQL Sorting',
-    question_text: 'Which keyword sorts SQL query results from highest to lowest?',
-    option_a: 'ASC',
-    option_b: 'DESC',
-    option_c: 'HIGH',
-    option_d: 'REVERSE',
+    category: 'SQL Pattern Matching',
+    question_text: 'In standard SQL LIKE clauses, which wildcard character matches any sequence of zero or more characters?',
+    option_a: 'Question mark (?)',
+    option_b: 'Percent sign (%)',
+    option_c: 'Underscore (_)',
+    option_d: 'Asterisk (*)',
     correct_option: 'B',
-    explanation: 'DESC sorts records in descending order.'
+    explanation: '% matches zero or more characters.'
+  },
+  {
+    difficulty: 'ROOKIE',
+    topic_id: 'ol',
+    category: 'SQL Ranges',
+    question_text: 'Which SQL operator tests whether a value falls within an inclusive range (e.g., between 10 and 50)?',
+    option_a: 'RANGE',
+    option_b: 'WITHIN',
+    option_c: 'BETWEEN',
+    option_d: 'INSIDE',
+    correct_option: 'C',
+    explanation: 'BETWEEN tests whether a value is between lower and upper bounds inclusive.'
+  },
+  {
+    difficulty: 'ROOKIE',
+    topic_id: 'ol',
+    category: 'SQL NULL Handling',
+    question_text: 'How do you correctly check whether a column "phone" contains a missing/null value in SQL?',
+    option_a: 'WHERE phone = NULL',
+    option_b: 'WHERE phone == NULL',
+    option_c: 'WHERE phone IS EMPTY',
+    option_d: 'WHERE phone IS NULL',
+    correct_option: 'D',
+    explanation: 'NULL cannot be compared with =, so IS NULL must be used.'
   },
 
-  // PRO-BOWLER (Medium SQL & Joins)
+  // ==================== PRO-BOWLER LEVEL (Medium Practical SQL: 12 Questions) ====================
   {
     difficulty: 'PRO-BOWLER',
     topic_id: 'ol',
     category: 'SQL Joins',
-    question_text: 'Which JOIN returns all records from the left table and matching records from the right table, filling NULLs for non-matches?',
+    question_text: 'Which JOIN returns only the rows that have matching join keys in BOTH tables?',
     option_a: 'INNER JOIN',
-    option_b: 'CROSS JOIN',
-    option_c: 'LEFT JOIN',
+    option_b: 'LEFT JOIN',
+    option_c: 'RIGHT JOIN',
     option_d: 'FULL JOIN',
-    correct_option: 'C',
-    explanation: 'LEFT JOIN returns all left rows and matched right rows.'
+    correct_option: 'A',
+    explanation: 'INNER JOIN outputs only matching records from both tables.'
+  },
+  {
+    difficulty: 'PRO-BOWLER',
+    topic_id: 'ol',
+    category: 'SQL Joins',
+    question_text: 'Which JOIN returns all records from the left table and matched records from the right table, with NULLs for non-matches?',
+    option_a: 'INNER JOIN',
+    option_b: 'LEFT JOIN',
+    option_c: 'CROSS JOIN',
+    option_d: 'RIGHT JOIN',
+    correct_option: 'B',
+    explanation: 'LEFT JOIN returns all left rows plus matching right rows.'
   },
   {
     difficulty: 'PRO-BOWLER',
     topic_id: 'ol',
     category: 'SQL Grouping',
-    question_text: 'Which clause is used to filter aggregated data produced by a GROUP BY clause?',
+    question_text: 'Which clause is used to filter groups created by a GROUP BY clause based on aggregate values?',
     option_a: 'WHERE',
-    option_b: 'HAVING',
-    option_c: 'ORDER BY',
+    option_b: 'ORDER BY',
+    option_c: 'HAVING',
     option_d: 'QUALIFY',
+    correct_option: 'C',
+    explanation: 'HAVING filters aggregate calculations.'
+  },
+  {
+    difficulty: 'PRO-BOWLER',
+    topic_id: 'ol',
+    category: 'SQL Set Operators',
+    question_text: 'What is the key difference between UNION and UNION ALL?',
+    option_a: 'UNION sorts alphabetically while UNION ALL sorts numerically',
+    option_b: 'UNION ALL removes duplicate records while UNION retains them',
+    option_c: 'UNION works only on integer columns while UNION ALL works on text',
+    option_d: 'UNION removes duplicate rows while UNION ALL preserves all rows including duplicates',
+    correct_option: 'D',
+    explanation: 'UNION performs a distinct sort; UNION ALL retains duplicates.'
+  },
+  {
+    difficulty: 'PRO-BOWLER',
+    topic_id: 'ol',
+    category: 'SQL Execution Order',
+    question_text: 'In what order are SQL clauses logically evaluated by relational database engines?',
+    option_a: 'FROM -> WHERE -> GROUP BY -> HAVING -> SELECT -> ORDER BY',
+    option_b: 'SELECT -> FROM -> WHERE -> GROUP BY -> HAVING -> ORDER BY',
+    option_c: 'WHERE -> FROM -> SELECT -> GROUP BY -> HAVING -> ORDER BY',
+    option_d: 'FROM -> SELECT -> WHERE -> ORDER BY -> GROUP BY -> HAVING',
+    correct_option: 'A',
+    explanation: 'Logical query processing order begins with FROM and evaluates SELECT near the end.'
+  },
+  {
+    difficulty: 'PRO-BOWLER',
+    topic_id: 'ol',
+    category: 'SQL Subqueries',
+    question_text: 'Which operator checks whether a subquery returns any records at all, terminating as soon as a single match is found?',
+    option_a: 'IN',
+    option_b: 'EXISTS',
+    option_c: 'ANY',
+    option_d: 'CONTAINS',
     correct_option: 'B',
-    explanation: 'HAVING filters aggregate groups.'
+    explanation: 'EXISTS returns boolean TRUE as soon as a row is found.'
+  },
+  {
+    difficulty: 'PRO-BOWLER',
+    topic_id: 'ol',
+    category: 'SQL Functions',
+    question_text: 'Which ANSI SQL function evaluates a list of arguments and returns the first non-null value?',
+    option_a: 'NVL()',
+    option_b: 'IFNULL()',
+    option_c: 'COALESCE()',
+    option_d: 'ISNULL()',
+    correct_option: 'C',
+    explanation: 'COALESCE returns the first non-null expression.'
   },
   {
     difficulty: 'PRO-BOWLER',
     topic_id: 'ol',
     category: 'SQL Window Functions',
-    question_text: 'Which window function assigns sequential rank numbers without leaving gaps when values tie?',
-    option_a: 'DENSE_RANK()',
-    option_b: 'RANK()',
-    option_c: 'ROW_NUMBER()',
-    option_d: 'NTILE()',
+    question_text: 'Which window function assigns contiguous ranks without leaving gaps when duplicate values occur (e.g., 1, 1, 2)?',
+    option_a: 'RANK()',
+    option_b: 'ROW_NUMBER()',
+    option_c: 'NTILE()',
+    option_d: 'DENSE_RANK()',
+    correct_option: 'D',
+    explanation: 'DENSE_RANK() does not skip rank values upon ties.'
+  },
+  {
+    difficulty: 'PRO-BOWLER',
+    topic_id: 'ol',
+    category: 'SQL Window Functions',
+    question_text: 'Which window function provides access to a row value at a given physical offset prior to the current row without a self-join?',
+    option_a: 'LAG()',
+    option_b: 'LEAD()',
+    option_c: 'FIRST_VALUE()',
+    option_d: 'PREV()',
     correct_option: 'A',
-    explanation: 'DENSE_RANK() does not skip rank numbers on ties (e.g., 1, 1, 2).'
+    explanation: 'LAG(col, offset) accesses preceding row values.'
   },
   {
     difficulty: 'PRO-BOWLER',
     topic_id: 'ol',
     category: 'SQL CTEs',
-    question_text: 'Which SQL keyword introduces a Common Table Expression (CTE) to define a temporary named result set?',
-    option_a: 'WITH',
-    option_b: 'LET',
+    question_text: 'Which clause defines a Common Table Expression (CTE) in standard SQL?',
+    option_a: 'LET',
+    option_b: 'WITH',
     option_c: 'DECLARE',
-    option_d: 'TABLE',
-    correct_option: 'A',
+    option_d: 'TEMP TABLE',
+    correct_option: 'B',
     explanation: 'WITH introduces a Common Table Expression.'
   },
-
-  // HALL OF FAMER (Advanced SQL & Data Engineering)
   {
-    difficulty: 'HALL OF FAMER',
+    difficulty: 'PRO-BOWLER',
     topic_id: 'ol',
-    category: 'Data Lake Architecture',
-    question_text: 'When designing a distributed data lake in Apache Parquet, what problem occurs when partitioning tables by high-cardinality timestamps down to the second?',
-    option_a: 'Data corruption in columnar snappy compression',
-    option_b: 'Small files problem causing excessive metadata overhead and slow query planning',
-    option_c: 'Loss of ACID isolation in object storage buckets',
-    option_d: 'Schema evolution locks',
-    correct_option: 'B',
-    explanation: 'High-cardinality partitions generate millions of tiny files, overwhelming query engines.'
+    category: 'SQL Subqueries',
+    question_text: 'What defines a Correlated Subquery in SQL?',
+    option_a: 'A subquery that runs once before the outer query begins',
+    option_b: 'A subquery that cannot contain aggregate functions',
+    option_c: 'A subquery that references columns from the outer query, evaluating once for every candidate row of the outer query',
+    option_d: 'A subquery that creates a physical table on disk',
+    correct_option: 'C',
+    explanation: 'Correlated subqueries depend on outer query column values.'
   },
+  {
+    difficulty: 'PRO-BOWLER',
+    topic_id: 'ol',
+    category: 'SQL Window Clause',
+    question_text: 'In standard SQL window functions, which clause defines the partitioning, ordering, and framing of the calculation window?',
+    option_a: 'PARTITION',
+    option_b: 'GROUP',
+    option_c: 'WINDOW BY',
+    option_d: 'OVER()',
+    correct_option: 'D',
+    explanation: 'The OVER() clause configures window function partitions and orderings.'
+  },
+
+  // ==================== HALL OF FAMER LEVEL (Advanced SQL Architecture: 12 Questions) ====================
   {
     difficulty: 'HALL OF FAMER',
     topic_id: 'ol',
     category: 'SQL Optimization',
-    question_text: 'What is a "Covering Index" in database optimization?',
-    option_a: 'An index that contains all columns requested by a query, allowing index-only scans without accessing the table heap',
-    option_b: 'An index that encrypts table pages on storage',
-    option_c: 'An index that automatically replicates to standby replicas',
-    option_d: 'An index placed only on foreign keys',
+    question_text: 'What is a "Covering Index" in relational database optimization?',
+    option_a: 'An index that contains all columns requested by a query, allowing index-only scans without fetching table heap tuples',
+    option_b: 'An index that encrypts data files on disk',
+    option_c: 'An index created exclusively on foreign keys',
+    option_d: 'An index that replicates automatically to standby replicas',
     correct_option: 'A',
-    explanation: 'Covering indexes satisfy the entire query from the index tree without fetching heap tuples.'
+    explanation: 'Covering indexes fulfill queries directly from the index tree without table heap reads.'
   },
-
-  // ================= 2. SCOUTING COMBINE (Descriptive Stats & EDA) =================
-  // ROOKIE
   {
-    difficulty: 'ROOKIE',
-    topic_id: 'cb',
-    category: 'Descriptive Stats',
-    question_text: 'Which measure of central tendency is least affected by extreme numerical outliers?',
-    option_a: 'Mean',
-    option_b: 'Standard Deviation',
-    option_c: 'Median',
-    option_d: 'Variance',
+    difficulty: 'HALL OF FAMER',
+    topic_id: 'ol',
+    category: 'SQL Window Framing',
+    question_text: 'In SQL window functions, what is the default window frame when an ORDER BY clause is specified without an explicit ROWS or RANGE clause?',
+    option_a: 'ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING',
+    option_b: 'RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW',
+    option_c: 'ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING',
+    option_d: 'RANGE BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING',
+    correct_option: 'B',
+    explanation: 'Default frame with ORDER BY is RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW.'
+  },
+  {
+    difficulty: 'HALL OF FAMER',
+    topic_id: 'ol',
+    category: 'SQL Recursive Queries',
+    question_text: 'What two query members are combined using UNION ALL inside a standard Recursive Common Table Expression (CTE)?',
+    option_a: 'A temporary table block and a trigger',
+    option_b: 'A materialized view and a cursor',
+    option_c: 'An Anchor Member (base case) and a Recursive Member (referencing the CTE itself)',
+    option_d: 'An aggregated query and an unaggregated query',
     correct_option: 'C',
-    explanation: 'Median is robust to outliers because it depends on rank rather than magnitudes.'
+    explanation: 'Recursive CTEs combine an anchor member and a recursive member.'
   },
-  {
-    difficulty: 'ROOKIE',
-    topic_id: 'cb',
-    category: 'EDA Basics',
-    question_text: 'In a standard box plot, what data interval does the Interquartile Range (IQR) represent?',
-    option_a: 'Between the Minimum and Maximum',
-    option_b: 'Between the 25th percentile (Q1) and 75th percentile (Q3)',
-    option_c: 'Between Mean - 1 Std Dev and Mean + 1 Std Dev',
-    option_d: 'Between the 10th and 90th percentiles',
-    correct_option: 'B',
-    explanation: 'IQR = Q3 - Q1, spanning the middle 50% of the dataset.'
-  },
-  // PRO-BOWLER
-  {
-    difficulty: 'PRO-BOWLER',
-    topic_id: 'cb',
-    category: 'EDA & Distributions',
-    question_text: 'In an exploratory analysis of continuous salaries, Mean is $85,000 and Median is $52,000. What is the skewness?',
-    option_a: 'Right-skewed (Positively skewed)',
-    option_b: 'Left-skewed (Negatively skewed)',
-    option_c: 'Symmetric Gaussian',
-    option_d: 'Zero variance',
-    correct_option: 'A',
-    explanation: 'When Mean > Median, the distribution exhibits a long right-hand tail.'
-  },
-  // HALL OF FAMER
   {
     difficulty: 'HALL OF FAMER',
-    topic_id: 'cb',
-    category: 'Multicollinearity & VIF',
-    question_text: 'In linear regression diagnostics, what does a Variance Inflation Factor (VIF) greater than 10 for a feature indicate?',
-    option_a: 'High heteroscedasticity across residuals',
-    option_b: 'Severe multicollinearity where the feature is heavily explained by other predictors',
-    option_c: 'Violation of residual normality',
-    option_d: 'High autocorrelation',
-    correct_option: 'B',
-    explanation: 'VIF > 10 signifies severe multicollinearity, inflating coefficient standard errors.'
+    topic_id: 'ol',
+    category: 'SQL Three-Valued Logic',
+    question_text: 'In SQL three-valued logic (3VL), what does comparing (NULL = NULL) evaluate to in a WHERE clause?',
+    option_a: 'TRUE',
+    option_b: 'FALSE',
+    option_c: 'UNKNOWN (which is treated as false by WHERE filters)',
+    option_d: 'Error',
+    correct_option: 'C',
+    explanation: 'NULL represents unknown; NULL = NULL yields UNKNOWN, so the WHERE filter discards it.'
   },
-
-  // ================= 3. COACHES' CHALLENGE (Inferential Stats & Hypotheses) =================
-  // ROOKIE
-  {
-    difficulty: 'ROOKIE',
-    topic_id: 'hc',
-    category: 'Hypothesis Testing',
-    question_text: 'What constitutes a Type I error in statistical hypothesis testing?',
-    option_a: 'Failing to reject a false null hypothesis',
-    option_b: 'Rejecting a true null hypothesis (False Positive)',
-    option_c: 'Sampling bias in observational studies',
-    option_d: 'Incorrect degrees of freedom',
-    correct_option: 'B',
-    explanation: 'Type I error is falsely rejecting H0 when H0 is actually true.'
-  },
-  // PRO-BOWLER
-  {
-    difficulty: 'PRO-BOWLER',
-    topic_id: 'hc',
-    category: 'A/B Testing & P-Values',
-    question_text: 'In an A/B test with alpha = 0.05, what does a calculated p-value of 0.02 strictly imply?',
-    option_a: 'There is a 98% probability that the variant is superior',
-    option_b: 'Assuming the null hypothesis is true, there is only a 2% chance of observing this effect (or more extreme)',
-    option_c: 'The statistical power of the test is 2%',
-    option_d: 'The experiment has a 2% margin of error',
-    correct_option: 'B',
-    explanation: 'P-value is the probability of obtaining test results at least as extreme, given H0 is true.'
-  },
-  // HALL OF FAMER
   {
     difficulty: 'HALL OF FAMER',
-    topic_id: 'hc',
-    category: 'Multiple Testing Correction',
-    question_text: 'Why must multiple testing corrections (e.g. Benjamini-Hochberg or Bonferroni) be used when testing 30 variant metrics simultaneously?',
-    option_a: 'To prevent inflated Family-Wise Error Rate (FWER) and false discovery explosions',
-    option_b: 'To reduce the required sample size',
-    option_c: 'To eliminate variance across user cohorts',
-    option_d: 'To convert one-tailed tests into two-tailed tests',
+    topic_id: 'ol',
+    category: 'SQL Joins',
+    question_text: 'Which join produces a Cartesian product where every row of table 1 is paired with every row of table 2?',
+    option_a: 'CROSS JOIN',
+    option_b: 'FULL OUTER JOIN',
+    option_c: 'NATURAL JOIN',
+    option_d: 'SELF JOIN',
     correct_option: 'A',
-    explanation: 'Testing multiple hypotheses without correction drastically inflates the chance of false positives.'
+    explanation: 'CROSS JOIN produces the Cartesian product of two tables.'
   },
-
-  // ================= 4. THE PLAYBOOK (Supervised Machine Learning) =================
-  // ROOKIE
-  {
-    difficulty: 'ROOKIE',
-    topic_id: 'oc',
-    category: 'Supervised ML',
-    question_text: 'What is the primary characteristic of L1 Regularization (Lasso) compared to L2 (Ridge)?',
-    option_a: 'Lasso drives uninformative feature weights strictly to zero for sparse feature selection',
-    option_b: 'Lasso only works for regression problems',
-    option_c: 'Ridge requires unnormalized target variables',
-    option_d: 'Lasso prevents gradient descent optimization',
-    correct_option: 'A',
-    explanation: 'Lasso penalizes absolute coefficients, setting unneeded weights to 0.'
-  },
-  // PRO-BOWLER
-  {
-    difficulty: 'PRO-BOWLER',
-    topic_id: 'oc',
-    category: 'Ensemble Learning',
-    question_text: 'How does Random Forest fundamentally differ from Gradient Boosted Decision Trees (XGBoost/LightGBM)?',
-    option_a: 'Random Forest trains deep trees in parallel independently; Gradient Boosting trains shallow trees sequentially to correct residual errors',
-    option_b: 'Boosting only works on classification models',
-    option_c: 'Random forest cannot handle categorical variables',
-    option_d: 'Boosted trees do not compute feature importance',
-    correct_option: 'A',
-    explanation: 'Random Forest averages independent trees; Boosting iteratively reduces residual errors.'
-  },
-  // HALL OF FAMER
   {
     difficulty: 'HALL OF FAMER',
-    topic_id: 'oc',
-    category: 'Loss Optimization',
-    question_text: 'Why does XGBoost use a second-order Taylor expansion (gradients and hessians) for its loss objective?',
-    option_a: 'To calculate optimal leaf split weights and split gains in closed-form for any arbitrary differentiable loss function',
-    option_b: 'To guarantee O(1) inference speed',
-    option_c: 'To eliminate cross-validation requirements',
-    option_d: 'To convert nonlinear decision boundaries into hyperplanes',
-    correct_option: 'A',
-    explanation: 'Using gradient g and hessian h allows analytical calculation of leaf values w* = -G/(H+lambda).'
-  },
-
-  // ================= 5. ZONE COVERAGE (Unsupervised & Anomaly Detection) =================
-  // ROOKIE
-  {
-    difficulty: 'ROOKIE',
-    topic_id: 'fs',
-    category: 'Clustering',
-    question_text: 'Which clustering algorithm requires you to define the number of clusters (K) in advance?',
-    option_a: 'DBSCAN',
-    option_b: 'K-Means',
-    option_c: 'Mean Shift',
-    option_d: 'OPTICS',
+    topic_id: 'ol',
+    category: 'SQL Index Optimization',
+    question_text: 'Why does applying a function to an indexed column (e.g. WHERE UPPER(email) = "JOHN@ACME.COM") prevent normal B-Tree index lookups?',
+    option_a: 'String functions consume too much memory',
+    option_b: 'Standard B-trees store raw column values, so computing a function requires evaluating every row unless an expression/functional index exists',
+    option_c: 'SQL standard disallows functions in WHERE clauses',
+    option_d: 'Table locks block index reads during function evaluation',
     correct_option: 'B',
-    explanation: 'K-Means requires specifying K clusters before optimization.'
+    explanation: 'Evaluating functions on columns invalidates direct index range lookups unless an expression index is created.'
   },
-  // PRO-BOWLER
-  {
-    difficulty: 'PRO-BOWLER',
-    topic_id: 'fs',
-    category: 'Dimensionality Reduction',
-    question_text: 'In Principal Component Analysis (PCA), what do the principal component directions correspond to?',
-    option_a: 'The eigenvectors of the feature covariance matrix sorted by decreasing eigenvalues',
-    option_b: 'The centroid distance vectors between clusters',
-    option_c: 'The inverse loss gradients',
-    option_d: 'The L1 norm projection axes',
-    correct_option: 'A',
-    explanation: 'PCA components are the eigenvectors of the covariance matrix, ordered by variance.'
-  },
-  // HALL OF FAMER
   {
     difficulty: 'HALL OF FAMER',
-    topic_id: 'fs',
-    category: 'Anomaly Detection',
-    question_text: 'How does an Isolation Forest identify anomalous observations faster than normal observations?',
-    option_a: 'Anomalies reside in sparse regions and require fewer random feature splits to isolate, resulting in shorter average path lengths in trees',
-    option_b: 'By computing Euclidean distances to the global cluster medoid',
-    option_c: 'By constructing support vector convex hulls',
-    option_d: 'By fitting Gaussian kernel densities',
-    correct_option: 'A',
-    explanation: 'Outliers are isolated quickly near tree roots, having noticeably shorter path lengths.'
+    topic_id: 'ol',
+    category: 'SQL Transactions',
+    question_text: 'Which ACID property guarantees that all SQL operations within a transaction either completely commit or fully rollback on error?',
+    option_a: 'Consistency',
+    option_b: 'Isolation',
+    option_c: 'Atomicity',
+    option_d: 'Durability',
+    correct_option: 'C',
+    explanation: 'Atomicity enforces all-or-nothing execution.'
   },
-
-  // ================= 6. CLOCK MANAGEMENT (Time Series & Forecasting) =================
-  // ROOKIE
   {
-    difficulty: 'ROOKIE',
-    topic_id: 'st',
-    category: 'Time Series Basics',
-    question_text: 'What conditions are required for a time series to be considered weakly stationary?',
-    option_a: 'Constant mean, constant variance, and autocovariance that depends only on lag distance (not time)',
-    option_b: 'A constant upward linear trend',
-    option_c: 'Zero correlation between any two time steps',
-    option_d: 'Strict 12-month periodicity',
-    correct_option: 'A',
-    explanation: 'Weak stationarity requires time-invariant mean and variance, and lag-dependent autocovariance.'
-  },
-  // PRO-BOWLER
-  {
-    difficulty: 'PRO-BOWLER',
-    topic_id: 'st',
-    category: 'ARIMA Modeling',
-    question_text: 'In an ARIMA(p, d, q) model, what does the parameter "d" represent?',
-    option_a: 'The order of autoregressive lags',
-    option_b: 'The degree of differencing applied to make the time series stationary',
-    option_c: 'The number of moving average error terms',
-    option_d: 'The seasonal period length',
+    difficulty: 'HALL OF FAMER',
+    topic_id: 'ol',
+    category: 'SQL Locking',
+    question_text: 'Which clause locks the selected rows against concurrent UPDATE statements until the active transaction completes?',
+    option_a: 'LOCK TABLE',
+    option_b: 'SELECT ... FOR UPDATE',
+    option_c: 'SET TRANSACTION ISOLATION LEVEL',
+    option_d: 'READ ONLY',
     correct_option: 'B',
-    explanation: 'd is the differencing order applied to eliminate trends.'
+    explanation: 'SELECT ... FOR UPDATE takes an exclusive row-level lock on selected rows.'
   },
-  // HALL OF FAMER
   {
     difficulty: 'HALL OF FAMER',
-    topic_id: 'st',
-    category: 'Time Series Validation',
-    question_text: 'Why is standard randomized K-Fold cross validation invalid for evaluating time series forecasting models?',
-    option_a: 'It inflates RAM consumption during training',
-    option_b: 'It causes data leakage and lookahead bias by training on future observations to predict the past',
-    option_c: 'It cannot compute Mean Absolute Percentage Error (MAPE)',
-    option_d: 'It forces target values into negative ranges',
+    topic_id: 'ol',
+    category: 'SQL Grouping Extensions',
+    question_text: 'Which SQL GROUP BY extension produces all 2^N possible dimensional subtotals and grand totals for specified columns?',
+    option_a: 'CUBE',
+    option_b: 'ROLLUP',
+    option_c: 'GROUPING SETS',
+    option_d: 'PIVOT',
+    correct_option: 'A',
+    explanation: 'CUBE generates all combinations of subtotals and grand total.'
+  },
+  {
+    difficulty: 'HALL OF FAMER',
+    topic_id: 'ol',
+    category: 'SQL Joins Algorithms',
+    question_text: 'Which physical join algorithm builds an in-memory hash table on the smaller relation and scans the larger relation to find matches?',
+    option_a: 'Merge Join',
+    option_b: 'Nested Loop Join',
+    option_c: 'Hash Join',
+    option_d: 'Cartesian Loop',
+    correct_option: 'C',
+    explanation: 'Hash Join hashes the smaller relation into memory and probes it with the larger relation.'
+  },
+  {
+    difficulty: 'HALL OF FAMER',
+    topic_id: 'ol',
+    category: 'SQL Window Functions',
+    question_text: 'Which function splits an ordered partition into N approximately equal numbered buckets?',
+    option_a: 'BUCKET()',
+    option_b: 'NTILE()',
+    option_c: 'PERCENT_RANK()',
+    option_d: 'CHUNK()',
     correct_option: 'B',
-    explanation: 'Shuffling violates temporal order, leaking future data into training folds.'
+    explanation: 'NTILE(n) distributes rows in an ordered partition into n buckets.'
   },
-
-  // ================= 7. THE FRANCHISE QB (Deep Learning) =================
-  // ROOKIE
-  {
-    difficulty: 'ROOKIE',
-    topic_id: 'qb',
-    category: 'Neural Networks',
-    question_text: 'Which activation function is most widely used in hidden layers of deep networks to avoid the vanishing gradient problem seen in Sigmoid?',
-    option_a: 'ReLU (Rectified Linear Unit)',
-    option_b: 'Tanh',
-    option_c: 'Step Function',
-    option_d: 'Linear Identity',
-    correct_option: 'A',
-    explanation: 'ReLU derivative is 1 for positive values, preventing vanishing gradients.'
-  },
-  // PRO-BOWLER
-  {
-    difficulty: 'PRO-BOWLER',
-    topic_id: 'qb',
-    category: 'Deep Learning Architectures',
-    question_text: 'What is the primary role of Batch Normalization during deep neural network training?',
-    option_a: 'To normalize layer inputs to zero mean and unit variance across the mini-batch, stabilizing internal covariate shift and allowing higher learning rates',
-    option_b: 'To convert fully connected layers into convolutional filters',
-    option_c: 'To eliminate backpropagation pass steps',
-    option_d: 'To dynamically prune dead neurons',
-    correct_option: 'A',
-    explanation: 'Batch Normalization standardizes mini-batch layer inputs, accelerating convergence.'
-  },
-  // HALL OF FAMER
   {
     difficulty: 'HALL OF FAMER',
-    topic_id: 'qb',
-    category: 'Transformers & Attention',
-    question_text: 'In Transformer Multi-Head Self-Attention Softmax(QK^T / sqrt(d_k))V, why are dot products scaled by 1/sqrt(d_k)?',
-    option_a: 'To prevent large values from driving the Softmax function into regions with near-zero gradients (vanishing gradients)',
-    option_b: 'To enforce orthogonal projections across attention heads',
-    option_c: 'To invert token positional encodings',
-    option_d: 'To eliminate quadratic O(N^2) sequence complexity',
-    correct_option: 'A',
-    explanation: 'For large d_k, dot products grow large, pushing softmax into flat saturation zones with tiny gradients.'
-  },
-
-  // ================= 8. AUDIBLES & CALLING (NLP & Generative AI) =================
-  // ROOKIE
-  {
-    difficulty: 'ROOKIE',
-    topic_id: 'dc',
-    category: 'NLP Embeddings',
-    question_text: 'What is the primary advantage of contextual word embeddings (BERT) over static embeddings (Word2Vec / GloVe)?',
-    option_a: 'BERT generates different vector embeddings for the same word based on its sentence context',
-    option_b: 'BERT requires no vocabulary tokenization',
-    option_c: 'Word2Vec cannot run on CPU hardware',
-    option_d: 'BERT produces single-dimension integers instead of vectors',
-    correct_option: 'A',
-    explanation: 'Contextual embeddings assign different representations based on surrounding context.'
-  },
-  // PRO-BOWLER
-  {
-    difficulty: 'PRO-BOWLER',
-    topic_id: 'dc',
-    category: 'RAG Architecture',
-    question_text: 'In a Retrieval-Augmented Generation (RAG) system, what is the role of a Vector Database?',
-    option_a: 'To store chunk embeddings and retrieve semantically similar context chunks via Approximate Nearest Neighbor (ANN) search',
-    option_b: 'To fine-tune transformer model weights',
-    option_c: 'To convert output text into speech',
-    option_d: 'To calculate perplexity and BLEU scores',
-    correct_option: 'A',
-    explanation: 'Vector databases index high-dimensional embeddings for fast semantic similarity lookups.'
-  },
-  // HALL OF FAMER
-  {
-    difficulty: 'HALL OF FAMER',
-    topic_id: 'dc',
-    category: 'LLM Fine-Tuning & Quantization',
-    question_text: 'How does LoRA (Low-Rank Adaptation) fine-tune large language models efficiently without updating full model weights?',
-    option_a: 'By freezing base weights and injecting trainable low-rank decomposition matrices Delta_W = B * A with rank r << min(d, k)',
-    option_b: 'By quantizing all model parameters from 16-bit to 1-bit binary weights',
-    option_c: 'By deleting attention heads with lowest variance',
-    option_d: 'By replacing causal decoder masks with bidirectional encoders',
-    correct_option: 'A',
-    explanation: 'LoRA freezes base weights and trains small low-rank adapter matrices B and A.'
-  },
-
-  // ================= 9. THE FRONT OFFICE (MLOps & System Architecture) =================
-  // ROOKIE
-  {
-    difficulty: 'ROOKIE',
-    topic_id: 'gm',
-    category: 'Model Monitoring',
-    question_text: 'What type of drift occurs when the distribution of input features changes over time (P(X) shifts) while the relationship to targets P(Y|X) remains constant?',
-    option_a: 'Concept Drift',
-    option_b: 'Data Drift (Covariate Shift)',
-    option_c: 'Target Leakage',
-    option_d: 'Prior Shift',
-    correct_option: 'B',
-    explanation: 'Data Drift / Covariate Shift refers to shifts in input feature distributions P(X).'
-  },
-  // PRO-BOWLER
-  {
-    difficulty: 'PRO-BOWLER',
-    topic_id: 'gm',
-    category: 'Deployment Strategies',
-    question_text: 'Which deployment strategy safely routes a small percentage (e.g. 5%) of production traffic to a new model to monitor real-world performance before full rollout?',
-    option_a: 'Canary Deployment',
-    option_b: 'Blue-Green Deployment',
-    option_c: 'Shadow Deployment',
-    option_d: 'Rolling Deployment',
-    correct_option: 'A',
-    explanation: 'Canary deployments send a small slice of live traffic to evaluate the new version.'
-  },
-  // HALL OF FAMER
-  {
-    difficulty: 'HALL OF FAMER',
-    topic_id: 'gm',
-    category: 'Feature Stores & Architecture',
-    question_text: 'In enterprise MLOps architectures, what is the primary role of a dual-layer Feature Store (Online vs Offline)?',
-    option_a: 'Online store provides low-latency key-value feature lookups for real-time inference, while Offline store provides point-in-time historical joins for training without data leakage',
-    option_b: 'To convert unstructured video into tabular CSV tables',
-    option_c: 'To automatically generate API documentation and licenses',
-    option_d: 'To run unit tests across distributed clusters',
-    correct_option: 'A',
-    explanation: 'Dual feature stores prevent training-serving skew with low-latency reads in production and point-in-time joins in training.'
+    topic_id: 'ol',
+    category: 'SQL Execution Plans',
+    question_text: 'Which SQL command displays the optimizer\'s execution plan, operator costs, and index usage without modifying table data?',
+    option_a: 'DESCRIBE',
+    option_b: 'PROFILE',
+    option_c: 'EXPLAIN',
+    option_d: 'SHOW PLAN',
+    correct_option: 'C',
+    explanation: 'EXPLAIN outputs the query execution plan generated by the optimizer.'
   }
 ];
 
 export const seedQuestions = async (): Promise<void> => {
   await query('TRUNCATE TABLE questions CASCADE');
 
-  for (const q of COMPLETE_CURRICULUM_BANK) {
+  for (const q of DEDICATED_SQL_BANK) {
     const id = uuidv4();
     await query(
       `INSERT INTO questions (id, difficulty, topic_id, category, question_text, option_a, option_b, option_c, option_d, correct_option, explanation)
@@ -500,7 +471,7 @@ export const seedQuestions = async (): Promise<void> => {
 if (require.main === module) {
   seedQuestions()
     .then(() => {
-      console.log('Successfully seeded complete curriculum question bank.');
+      console.log('Successfully seeded 100% dedicated SQL questions.');
       process.exit(0);
     })
     .catch((err) => {
