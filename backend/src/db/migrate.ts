@@ -28,6 +28,9 @@ export const runMigrations = async (): Promise<void> => {
       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- Ensure column exists if table was previously created without it
+    ALTER TABLE questions ADD COLUMN IF NOT EXISTS topic_id VARCHAR(20) NOT NULL DEFAULT 'all';
+
     CREATE INDEX IF NOT EXISTS idx_questions_diff ON questions(difficulty);
     CREATE INDEX IF NOT EXISTS idx_questions_topic ON questions(topic_id);
 
